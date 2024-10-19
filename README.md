@@ -9,6 +9,9 @@ this is my new dotfiles
 
 ### Preview
 
+![dwm](https://github.com/lutheran736/dotfiles/blob/master/dwm.png?raw=true)
+![dmenu](https://github.com/lutheran736/dotfiles/blob/master/dmenu.png?raw=true)
+
 ## About setup
 
 - OS:  [Artix Linux](https://wiki.artixlinux.org)
