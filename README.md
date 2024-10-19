@@ -9,8 +9,8 @@ this is my dotfiles
 
 ### Preview
 
-![dwm](https://github.com/lutheran736/dotfiles/blob/master/dwm.png?raw=true)
-![dmenu](https://github.com/lutheran736/dotfiles/blob/master/dmenu.png?raw=true)
+![dwm](https://github.com/lutheran736/dotfiles/blob/screenshot/dwm.png?raw=true)
+![dmenu](https://github.com/lutheran736/dotfiles/blob/screenshot/dmenu.png?raw=true)
 
 ## About setup
 
