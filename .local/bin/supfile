@@ -1,0 +1,12 @@
+#!/bin/sh
+
+file=$1
+[ -z "$file" ] && exit 1 
+[ ! -f "$file" ] && exit 1
+dir=$(uuidgen | cut -d '-' -f 1)
+mkdir "/tmp/$dir"
+zip -r --encrypt "$dir.zip" "/tmp/$dir"
+link=$(curl -s -F "file=@$file" -Fexpires=24 https://0x0.st)
+echo "$link" | xclip -sel clip
+echo "Link: $link"
+

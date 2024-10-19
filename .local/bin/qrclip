@@ -1,0 +1,5 @@
+#!/bin/sh
+temp=$(mktemp -p "$XDG_RUNTIME_DIR" --suffix=.png)
+trap 'rm -f $temp' HUP INT QUIT TERM PWR EXIT
+qrencode -t PNG -s 8 -o "$temp" "$(xclip -o)"
+nsxiv "$temp"

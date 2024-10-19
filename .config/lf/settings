@@ -1,0 +1,14 @@
+# Basic vars
+set previewer '~/.config/lf/scripts/previewer'
+set preview true
+set cleaner '~/.config/lf/scripts/cleaner'
+set shellopts '-eu'
+set ifs "\n"
+set scrolloff 10
+set icons
+set period 1
+set hiddenfiles ".*:*.aux:*.log:*.bbl:*.bcf:*.blg:*.run.xml"
+set autoquit true
+set tabstop 4
+set ignorecase true
+set truncatechar ⋯

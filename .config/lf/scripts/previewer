@@ -1,0 +1,80 @@
+#!/bin/sh
+
+# Function to show a preview of the file using ueberzug
+preview() {
+    cat <<-EOF | paste -sd '' >"$LF_UEBERZUG_TEMPDIR/fifo"
+	{
+	"action": "add", "identifier": "preview",
+	"path": "$1", "x": $4, "y": $5, "width": $2, "height": $3,
+	"scaler": "contain"
+	}
+	EOF
+}
+
+file="$1"
+shift
+case "$(file --brief --dereference --mime-type -- "$file")" in
+*/zip | */jar | */war | */ear | */oxt | */vnd.android.package-archive)
+    unzip -l "$file"
+    ;;
+*/*rar)
+    unrar l "$file"
+    ;;
+*/gz | */tar | */tgz | */tar.gz | */tar.bz2 | */tbz2 | */tar.txz | */txz | */7z | */lha | */alzip | */ace | */ar* | */rpm | */deb | */cab | */gz* | */bzip* | */compress | */lz* | */xz | */rzip | */lrzip | */7zip | */cpio)
+    atool --list -- "$file"
+    ;;
+*/pdf)
+    thumbnail="$LF_UEBERZUG_TEMPDIR/thumbnail.png"
+    gs -o "$thumbnail" -sDEVICE=pngalpha -dLastPage=1 "$file" >/dev/null
+    preview "$thumbnail" "$@"
+    ;;
+*/epub+zip | */mobi*)
+    thumbnail="$LF_UEBERZUG_TEMPDIR/thumbnail.png"
+    gnome-epub-thumbnailer "$file" "$thumbnail"
+    preview "$thumbnail" "$@"
+    ;;
+image/svg+xml)
+    thumbnail="$LF_UEBERZUG_TEMPDIR/thumbnail.png"
+    gm convert "$file" "$thumbnail"
+    preview "$thumbnail" "$@"
+    ;;
+
+image/x-xcf)
+    thumbnail="$LF_UEBERZUG_TEMPDIR/thumbnail.png"
+    magick "$file" "$thumbnail"
+    preview "$thumbnail" "$@"
+    ;;
+
+image/*)
+    preview "$file" "$@"
+    ;;
+audio/*)
+    mediainfo "$file"
+    ;;
+video/*)
+    thumbnail="$LF_UEBERZUG_TEMPDIR/thumbnail.png"
+    ffmpegthumbnailer -i "$file" -o "$thumbnail" -s 0 -q 5
+    preview "$thumbnail" "$@"
+    ;;
+*/pgp-encrypted | */octet-stream)
+    gpg -d -- "$file"
+    ;;
+text/html)
+    lynx -display_charset=utf-8 -dump "$file"
+    ;;
+text/troff)
+    man ./ "$file" | col -b
+    ;;
+text/* | */xml | */json | */x-ndjson | */x-subrip)
+    bat --color=always --style=plain --pager=never "$file"
+    ;;
+*opendocument*)
+    odt2txt "$file"
+    ;;
+*iso*)
+    iso-info --no-header -l "$file"
+    ;;
+esac
+
+# Return a nonzero return code to force lf to reload the preview
+exit 127

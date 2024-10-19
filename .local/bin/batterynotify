@@ -1,0 +1,38 @@
+#!/bin/sh
+
+old_state=$(cat /sys/class/power_supply/BAT?*/status)
+notification_sent=false
+
+while true; do
+
+    state=$(cat /sys/class/power_supply/BAT?*/status)
+    percent=$(cat /sys/class/power_supply/BAT?*/capacity)
+
+    # Check if battery state has changed
+    if [ "$state" != "$old_state" ]; then
+        notification_sent=false
+        old_state=$state
+    fi
+
+    # Check if battery is fully charged
+    if [ "$state" = "Charging" ] && [ "$percent" -ge 99 ] && [ "$notification_sent" = false ]; then
+        notify-send -u low "$percent! Battery fully charged" "Disconnect your charger from the power!"
+        notification_sent=true
+    fi
+
+    # Check if battery is too low
+    if [ "$state" = "Discharging" ] && [ "$percent" -le 25 ] && [ "$notification_sent" = false ]; then
+        notify-send -u critical "$percent% Critical battery level" "Charge your battery immediately!"
+        notification_sent=true
+    fi
+
+    # suspend if battery is to low
+    if [ "$state" = "Discharging" ] && [ "$percent" -le 20 ]; then
+        notify-send -u critical "$percent% Critical battery level" "The PC will be suspended!"
+        pauseallmpv
+        sleep 30s && loginctl suspend
+    fi
+
+    # Wait 1 minute before checking again
+    sleep 60
+done

@@ -1,0 +1,180 @@
+#!/bin/sh
+
+# Use neovim for vim if present.
+[ -x "$(command -v nvim)" ] && alias vim="nvim" vimdiff="nvim -d"
+
+# Use $XINITRC variable if file exists.
+[ -f "$XINITRC" ] && alias startx="startx $XINITRC"
+[ -f "$MBSYNCRC" ] && alias mbsync="mbsync -c $MBSYNCRC"
+
+# sudo not required for some system commands
+for command in mount umount sv pacman updatedb su shutdown poweroff reboot; do
+    alias $command="sudo $command"
+done
+unset command
+
+se() {
+    choice="$(find ~/.local/bin -mindepth 1 -printf '%P\n' | fzf)"
+    [ -f "$HOME/.local/bin/$choice" ] && $EDITOR "$HOME/.local/bin/$choice"
+}
+
+# Function extract for common file formats
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+
+ex() {
+    if [ -z "$1" ]; then
+        # display usage if no parameters given
+        echo "Usage: extract <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz>"
+        echo "       extract <path/file_name_1.ext> [path/file_name_2.ext] [path/file_name_3.ext]"
+    else
+        for n in "$@"; do
+            if [ -f "$n" ]; then
+                case "${n%,}" in
+                *.cbt | *.tar.bz2 | *.tar.gz | *.tar.xz | *.tbz2 | *.tgz | *.txz | *.tar)
+                    tar xvf "$n"
+                    ;;
+                *.lzma) unlzma ./"$n" ;;
+                *.bz2) bunzip2 ./"$n" ;;
+                *.cbr | *.rar) unrar x -ad ./"$n" ;;
+                *.gz) gunzip ./"$n" ;;
+                *.cbz | *.epub | *.zip) unzip ./"$n" ;;
+                *.z) uncompress ./"$n" ;;
+                *.7z | *.arj | *.cab | *.cb7 | *.chm | *.deb | *.dmg | *.iso | *.lzh | *.msi | *.pkg | *.rpm | *.udf | *.wim | *.xar)
+                    7z x ./"$n"
+                    ;;
+                *.xz) unxz ./"$n" ;;
+                *.exe) cabextract ./"$n" ;;
+                *.cpio) cpio -id <./"$n" ;;
+                *.cba | *.ace) unace x ./"$n" ;;
+                *)
+                    echo "extract: '$n' - unknown archive method"
+                    return 1
+                    ;;
+                esac
+            else
+                echo "'$n' - file does not exist"
+                return 1
+            fi
+        done
+    fi
+}
+
+IFS=$SAVEIFS
+
+nickrandom(){
+  nick=$(shuf -n 1 /usr/share/dict/words | tr -d "'")
+  echo "$nick" | xclip -sel clip
+  echo "Nick: $nick"
+}
+
+pw(){
+passw=$(cat < /dev/urandom | tr -dc 'a-zA-Z0-9-!@#$%^&*()_+~' | fold -w 30 | head -n 1)
+echo "$passw" | xclip -sel clip
+echo "Password: $passw"
+}
+
+# navigation
+alias \
+    ..='cd ..' \
+    ...='cd ../..' \
+    .3='cd ../../..' \
+    .4='cd ../../../..' \
+    .5='cd ../../../../..'
+
+# pacman
+alias \
+    pacsyu='sudo pacman -Syu' \
+    pacsyyu='sudo pacman -Syyu' \
+    pacscc='sudo pacman -Scc' \
+    unlock='sudo rm /var/lib/pacman/db.lck' \
+    cleanup='sudo pacman -Rns $(pacman -Qtdq)' \
+    list="sudo pacman -Qqe" \
+    listt="sudo pacman -Qqet" \
+    listaur="sudo pacman -Qqem"
+# ps
+alias \
+    psa="ps auxf" \
+    psgrep="ps aux | grep -v grep | grep -i -e VSZ -e" \
+    psmem='ps auxf | sort -nr -k 4' \
+    psmem10='ps auxf | sort -nr -k 4 | head -10' \
+    pscpu='ps auxf | sort -nr -k 3' \
+    pscpu10='ps auxf | sort -nr -k 3 | head -10'
+
+# Verbosity and settings that you pretty much just always are going to want.
+alias \
+    cp="cp -iv" \
+    mv="mv -iv" \
+    rm="rm -iv" \
+    bc="bc -ql" \
+    rsync="rsync -vrPlu" \
+    mkd="mkdir -pv" \
+    yt="yt-dlp --embed-metadata -i" \
+    yta="yt -x -f bestaudio/best" \
+    ytt="yt --skip-download --write-thumbnail" \
+    ffmpeg="ffmpeg -hide_banner"
+
+# Colorize commands when possible.
+alias \
+    ls="ls -hN --color=auto --group-directories-first" \
+    grep="grep --color=auto" \
+    diff="diff --color=auto" \
+    dir="dir --color=auto" \
+    vdir="vdir --color=auto" \
+    grep="grep --color=auto" \
+    fgrep="fgrep --color=auto" \
+    egrep="egrep --color=auto" \
+    ip="ip -color=auto" \
+    ll="ls -alFh" \
+    la="ls -a" \
+    l="ls -CF" \
+    l.="ls -A | grep -E '^\.'" \
+    lla="ls -Alh"
+
+#youtube download
+alias \
+    yta-aac="yt-dlp --extract-audio --audio-format aac " \
+    yta-best="yt-dlp --extract-audio --audio-format best " \
+    yta-flac="yt-dlp --extract-audio --audio-format flac " \
+    yta-mp3="yt-dlp --extract-audio --audio-format mp3 " \
+    yta-mp3-spb="yt-dlp --extract-audio --audio-format mp3 --sponsorblock-remove all" \
+    ytv-best="yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio' --merge-output-format mp4 " \
+    yta-mp4="yt-dlp -f 'bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/best[ext=mp4][height<=720]' "
+
+# termbin
+alias \
+    tb="nc termbin.com 9999" \
+    tbc="nc termbin.com 9999 | xclip -selection c"
+
+# These common commands are just too long! Abbreviate them.
+alias \
+    ka="killall" \
+    g="git" \
+    sdn="shutdown -h now" \
+    e="$EDITOR" \
+    v="$EDITOR" \
+    p="pacman" \
+    z="zathura" \
+    dns="sudo chattr -i /etc/resolv.conf && sudo nvim /etc/resolv.conf && sudo chattr +i /etc/resolv.conf" \
+    wget="wget -c" \
+    config="/usr/bin/git --git-dir=$HOME/.dotfiles --work-tree=$HOME" \
+    fix-permissions="sudo chown -R $USER:$USER ~/.config ~/.local" \
+    rr='curl -s -L https://raw.githubusercontent.com/keroserene/rickrollrc/master/roll.sh | sh' \
+    merge='xrdb -merge ~/.config/x11/xresources' \
+    irssi="irssi --config=$XDG_CONFIG_HOME/irssi/config --home=$XDG_DATA_HOME/irssi" \
+    irssitor="proxychains irssi --config=$XDG_CONFIG_HOME/irssi/config --home=$XDG_DATA_HOME/irssi" \
+    update-grub="sudo grub-mkconfig -o /boot/grub/grub.cfg" \
+    update-fc="sudo fc-cache -fv" \
+    findme="curl geofind.me" \
+    xclip="xclip -selectio c" \
+    findme2="curl https://am.i.mullvad.net/json" \
+    curse='CALCURSE_CALDAV_PASSWORD=$(pass caldav/sweetmask20) calcurse-caldav' \
+    history="history 0" \
+    rip="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -200 | nl" \
+    riplong="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -3000 | nl"
+
+
+alias \
+    lf="lfub" \
+    magit="nvim -c MagitOnly" \
+    ref="shortcuts >/dev/null; source ${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc ; source ${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutenvrc ; source ${XDG_CONFIG_HOME:-$HOME/.config}/shell/zshnameddirrc"

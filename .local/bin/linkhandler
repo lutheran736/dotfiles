@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# Feed script a url or file location.
+# If an image, it will view in nsxiv,
+# if a video or gif, it will view in mpv
+# if a music file or pdf, it will download,
+# otherwise it opens link in browser.
+if [ -z "$1" ]; then
+    url="$(xclip -o)"
+else
+    url="$1"
+fi
+
+case "$url" in
+*mkv | *webm | *mp4 | *avi | *MP4 | *youtube.com/v* | *youtube.com/watch* | *youtube.com/embed* | *youtube.com/playlist* | *youtube.com/shorts* | *youtu.be* | *hooktube.com* | *bitchute.com* | *videos.lukesmith.xyz* | *odysee.com* | *rumble.com* | *video.twimg.com* | *ok.ru/video/* | *mp4?* | *MOV | *tiktok.com/*/video* | *twitch.tv/videos* | *video.hardlimit.com*)
+    setsid -f mpv "$url" >/dev/null 2>&1 || notify-send "failure to reproduce" &
+    ;;
+*png | *jpg | *jpe | *jpeg | *gif | *webp | *pbs.twimg.com/media/* | */yt3.ggpht.com/* | *preview.redd*)
+    nsxiv-url "$url" >/dev/null 2>&1 &
+    ;;
+*pdf | *cbz | *cbr)
+    zathura-url "$url" >/dev/null 2>&1 &
+    ;;
+*mp3 | *flac | *opus | *mp3?source* | *mp3?d* | *m4a | *ogg | *.mp3?*)
+    qndl "$url" 'curl -LO' >/dev/null 2>&1
+    ;;
+*)
+    if [ -f "$url" ]; then
+        setsid -f "$TERMINAL" -e "$EDITOR" "$url" >/dev/null 2>&1
+    else
+        setsid -f "$BROWSER" "$url" >/dev/null 2>&1
+    fi
+    ;;
+esac

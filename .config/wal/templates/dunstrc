@@ -1,0 +1,43 @@
+[global]
+    monitor = 0
+    follow = keyboard
+    width = 300
+    height = 300
+    origin = top-right
+    offset = 10x43
+    padding = 2
+    horizontal_padding = 2
+    transparency = 20
+    font = JetBrainsMono Nerd Font Mono 10
+    format = "<b>%s</b>\n%b"
+    line_height = 0
+    markup = full
+    alignment = center
+    idle_threshold = 120
+    show_age_threshold = 60
+    sort = no
+    word_wrap = yes
+    ignore_newline = no
+    stack_duplicates = false
+    hide_duplicate_count = yes
+    show_indicators = no
+    icon_position = left
+    max_icon_size = 80
+
+    icon_path = /usr/share/icons/Papirus-Dark/48x48/actions/:/usr/share/icons/Papirus-Dark/48x48/apps/:/usr/share/icons/Papirus-Dark/48x48/devices/:/usr/share/icons/Papirus-Dark/48x48/emblems/:/usr/share/icons/Papirus-Dark/48x48/emotes/:/usr/share/icons/Papirus-Dark/48x48/mimetypes/:/usr/share/icons/Papirus-Dark/48x48/places/:/usr/share/icons/Papirus-Dark/48x48/status/
+
+[urgency_low]
+    background = "{color0}" # color0
+    foreground = "{color8}" # color8
+    timeout = 3
+
+[urgency_normal]
+    foreground = "{color15}" # color15
+    background = "{color4}" # color4
+    timeout = 5
+
+[urgency_critical]
+    background = "{color1}" # color1
+    foreground = "{color15}" # color15
+    frame_color = "{color11}" # color11
+    timeout = 10

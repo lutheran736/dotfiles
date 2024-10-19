@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# This is bound to Shift+PrintScreen by default, requires maim. It lets you
+# choose the kind of screenshot to take, including copying the image or even
+# highlighting an area to copy. scrotcucks on suicidewatch right now.
+
+get_timestamp() {
+    date '+%y%m%d-%H%M-%S'
+}
+
+# variables
+output="$HOME/Pictures/screenshots"
+xclip_cmd="xclip -sel clip -t image/png"
+ocr_cmd="xclip -sel clip"
+
+case "$(printf "a selected area\\ncurrent window\\nfull screen\\na selected area (copy)\\ncurrent window (copy)\\nfull screen (copy)\\ncopy selected image to text\\ncopy qr code (copy)" | dmenu -l 8 -i -p "Screenshot which area?")" in
+"a selected area") maim -u -s "${output}/pic-selected-$(get_timestamp).png" ;;
+"current window") maim -B -q -d 0.2 -i "$(xdotool getactivewindow)" "${output}/pic-window-$(get_timestamp).png" ;;
+"full screen") maim -q -d 0.2 "${output}/pic-full-$(get_timestamp).png" ;;
+"a selected area (copy)") maim -u -s | ${xclip_cmd} ;;
+"current window (copy)") maim -q -d 0.2 -i "$(xdotool getactivewindow)" | ${xclip_cmd} ;;
+"full screen (copy)") maim -q -d 0.2 | ${xclip_cmd} ;;
+"copy selected image to text") tmpfile=$(mktemp /tmp/ocr-XXXXXX.png) && maim -u -s >"$tmpfile" && tesseract "$tmpfile" - -l eng | ${ocr_cmd} && rm "$tmpfile" ;;
+"copy qr code (copy)") tmpfile=$(mktemp /tmp/ocr-XXXXXX.png) && maim -u -s >"$tmpfile" && zbarimg -q "${tmpfile}" | ${ocr_cmd} ;;
+esac

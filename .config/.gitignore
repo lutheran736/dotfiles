@@ -1,0 +1,30 @@
+# Ignore everything
+/*
+!.gitignore
+
+# Except for the files and folders we want to track
+!htop
+!lf
+!shell
+!zsh
+!sxiv
+!paru
+!wget
+!x11
+!wal
+!zathura
+!dunst
+!gtk-2.0
+!gtk-3.0
+!fontconfig
+!tmux
+!mimeapps.list
+!lynx
+!pipewire
+!pinentry
+!pulse
+!yt-dlp
+!mpv
+!ytfzf
+!newsboat
+!mpd
