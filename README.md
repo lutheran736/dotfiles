@@ -14,25 +14,25 @@ this is my dotfiles
 
 ## About setup
 
-- OS:  [Artix Linux](https://wiki.artixlinux.org)
-- WM: [dwm](https://github.com/SweetMask4/sweetdwm)
+- OS: [Artix Linux](https://wiki.artixlinux.org)
+- WM: [dwm](https://github.com/lutheran736/dwm)
 - Font:
   - Monospace: [JetBrainsMono Nerd Font](https://www.nerdfonts.com/font-downloads)
   - Icon Fonts: [Fontawesome](https://github.com/FortAwesome/Font-Awesome)
 - Colorscheme: Arc-gtk-theme
 - Icons: [Papirus](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme)
-- Terminal: St
+- Terminal: [st](https://github.com/lutheran736/st)
 - Shell: zsh
 - Editor: [Neovim](https://neovim.io/)
     - Config: [Nvchad](https://nvchad.github.io/)
-- Compositor: Picom
-- Image Preview: [Nsxiv](https://nsxiv.codeberg.page/)
-- Wallpaper Setter: xwallpaper
+- Compositor: xcompmgr
+- Image Preview: [nsxiv](https://nsxiv.codeberg.page/)
+- Wallpaper Setter: xwallpaper
 - Screenshot: [main](https://github.com/naelstrof/maim)
 - Video Player: mpv
 - Browser: [librewolf](https://librewolf.net/)
-- Notification Daemon: Dunst
-- Lockscreen: [slock](https://tools.suckless.org/slock/)
+- Notification Daemon: Dunst
+- Lockscreen: [slock](https://tools.suckless.org/slock/)
 
 ### License
 
