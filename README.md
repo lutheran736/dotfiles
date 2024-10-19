@@ -1,6 +1,6 @@
 # Dotfiles
 
-this is my new dotfiles
+this is my dotfiles
 
 - Table of Contents
   - [Preview](#Preview)
