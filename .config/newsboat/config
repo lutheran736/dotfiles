@@ -8,6 +8,9 @@ max-items 100
 cleanup-on-quit yes 
 confirm-mark-feed-read no
 wrap-scroll yes
+ignore-mode "display"
+
+ignore-article "*" "content =~ \"Apple|Kde\""
 
 external-url-viewer "urlscan -dc -r 'linkhandler {}'"
 
