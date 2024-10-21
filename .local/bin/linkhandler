@@ -12,7 +12,7 @@ else
 fi
 
 case "$url" in
-*mkv | *webm | *mp4 | *avi | *MP4 | *mp4?* | *MOV | *youtube.com/v* | *youtube.com/watch* | *youtube.com/embed* | *youtube.com/playlist* | *youtube.com/shorts* | *youtu.be* | *hooktube.com* | *bitchute.com* | *videos.lukesmith.xyz* | *odysee.com* | *rumble.com* | *ok.ru/video/* | *twitch.tv/videos* | *inv.nadeko.net/watch*)
+    *mkv | *webm | *mp4 | *avi | *MP4 | *mp4?* | *MOV | *youtube.com/v* | *youtube.com/watch* | *youtube.com/embed* | *youtube.com/playlist* | *youtube.com/shorts* | *youtube.com/live* | *youtu.be* | *hooktube.com* | *bitchute.com* | *videos.lukesmith.xyz* | *odysee.com* | *rumble.com* | *ok.ru/video/* | *twitch.tv/videos* | *inv.nadeko.net/watch*)
     setsid -f mpv "$url" >/dev/null 2>&1 || notify-send "failure to reproduce" &
     ;;
 *png | *jpg | *jpe | *jpeg | *gif | *webp | *yt3.ggpht.com* | *preview.redd* | *img*)
