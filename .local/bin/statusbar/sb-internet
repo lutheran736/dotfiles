@@ -33,6 +33,6 @@ fi
 [ -n "$(cat /sys/class/net/tun*/operstate 2>/dev/null)" ] && tunicon=" 🔒"
 
 # Wireguard 
-[ "$(cat /sys/class/net/N*/operstate 2>/dev/null)" = 'unknown' ] && tunicon=" 🔒"
+[ "$(cat /sys/class/net/n*/operstate 2>/dev/null)" = 'unknown' ] && tunicon=" 🔒"
 
 printf "%s%s%s\n" "$wifiicon" "$ethericon" "$tunicon"
