@@ -1,16 +1,18 @@
 #show-read-feeds no
 auto-reload yes
 reload-threads 100
+reload-time 120
 
 #Feed settings 
 prepopulate-query-feeds yes 
 max-items 100
-cleanup-on-quit yes 
 confirm-mark-feed-read no
 wrap-scroll yes
-ignore-mode "display"
 
+# filter
+ignore-mode "display"
 ignore-article "*" "content =~ \"Apple|Kde\""
+ignore-article "*" "title =~ \"Apple\|Kde\""
 
 external-url-viewer "urlscan -dc -r 'linkhandler {}'"
 
@@ -50,6 +52,11 @@ macro d set browser "dmenuhandler" ; open-in-browser ; set browser linkhandler
 macro c set browser "echo %u | xclip -r -sel c" ; open-in-browser ; set browser linkhandler
 macro p set browser "peertubetorrent %u 480" ; open-in-browser ; set browser linkhandler
 macro P set browser "peertubetorrent %u 1080" ; open-in-browser ; set browser linkhandler
+
+# save articles
+save-path "~/Downloads/articles"
+# disable search history
+history-limit 0
 
 # Podcast items 
 download-path "~/Downloads/podcast/%n"
