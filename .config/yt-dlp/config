@@ -25,6 +25,8 @@
 # sponsorblock
 --sponsorblock-remove all
 
+--force-ipv4
+
 # Audio and video download formats
 
 # 🔊 Solo audio: AAC LC.
