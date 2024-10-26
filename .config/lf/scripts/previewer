@@ -65,7 +65,7 @@ text/html)
 text/troff)
     man ./ "$file" | col -b
     ;;
-text/* | */xml | */json | */x-ndjson | */x-subrip)
+text/* | */xml | */json | */x-ndjson | */x-subrip | */javascript)
     bat --color=always --style=plain --pager=never "$file"
     ;;
 *opendocument*)
