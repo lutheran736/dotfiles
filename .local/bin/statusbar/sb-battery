@@ -18,21 +18,35 @@ esac
 
 # Loop through all attached batteries and format the info
 for battery in /sys/class/power_supply/BAT?*; do
-    # If non-first battery, print a space separator.
-    [ -n "${capacity+x}" ] && printf " "
-    # Sets up the status and capacity
-    case "$(cat "$battery/status" 2>&1)" in
-    "Full") status="⚡" ;;
-    "Discharging") status="🔋" ;;
-    "Charging") status="🔌" ;;
-    "Not charging") status="🛑" ;;
-    "Unknown") status="♻️" ;;
-    *) exit 1 ;;
+  # If non-first battery, print a space separator.
+  [ -n "${capacity+x}" ] && printf " "
+  # Sets up the status and capacity
+  # case "$(cat "$battery/status" 2>&1)" in
+  # "Full") status="⚡" ;;
+  # "Discharging") status=" " ;;
+  # "Charging") status=" " ;;
+  # "Not charging") status="🛑" ;;
+  # "Unknown") status="♻️" ;;
+  # *) exit 1 ;;
+  # esac
+
+  capacity="$(cat "$battery/capacity" 2>&1)"
+
+if [ "$(cat "$battery/status" 2>&1)" = "Discharging" ]; then
+    case "$capacity" in
+    (9[0-9]|100) status=" " ;;
+    (7[0-9]|8[0-9]) status=" " ;;
+    (4[0-9]|5[0-9]|6[0-9]) status="" ;;
+    (2[0-9]|3[0-9]) status=" " ;;
+    (0[0-9]|1[0-9]|20) status=" " ;;
     esac
-    capacity="$(cat "$battery/capacity" 2>&1)"
-    # Will make a warn variable if discharging and low
-    [ "$status" = "🔋" ] && [ "$capacity" -le 25 ] && warn="❗"
-    # Prints the info
-    printf "%s%s%d%%" "$status" "$warn" "$capacity"
-    unset warn
+else
+    status=" "
+fi
+
+  # Will make a warn variable if discharging and low
+  [ "$status" = " " ] && [ "$capacity" -le 25 ] && warn="❗"
+  # Prints the info
+  printf "%s%s%d%%" "$status" "$warn" "$capacity"
+  unset warn
 done && printf "\\n"
