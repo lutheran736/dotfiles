@@ -49,8 +49,8 @@ bindkey -v '^?' backward-delete-char
 # Change cursor shape for different vi modes.
 function zle-keymap-select () {
     case $KEYMAP in
-        vicmd) echo -ne '\e[1 q';;      # block
-        viins|main) echo -ne '\e[5 q';; # beam
+        vicmd) echo -ne '\e[1 q' ;;      # block
+        viins|main) echo -ne '\e[5 q' ;; # beam
     esac
 }
 zle -N zle-keymap-select
@@ -83,6 +83,11 @@ bindkey '^[[P' delete-char
 bindkey  "^[[H"   beginning-of-line
 bindkey  "^[[4~"   end-of-line
 
+if [ -n "$TMUX" ];then
+    bindkey "^[OH" beginning-of-line
+    bindkey "^[OF" end-of-line
+fi
+
 # Edit line in vim with ctrl-e:
 autoload edit-command-line; zle -N edit-command-line
 bindkey '^e' edit-command-line
@@ -94,10 +99,10 @@ bindkey -M visual '^[[P' vi-delete
 . /usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
 
 # enable auto-suggestions based on the history
-    if [ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
-        . /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-        # Suggestion Strategy
-        ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-        # change suggestion color
-        ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#999'
-    fi
+if [ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+    . /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+    # Suggestion Strategy
+    ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+    # change suggestion color
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#999'
+fi
