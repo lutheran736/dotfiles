@@ -9,11 +9,6 @@ max-items 100
 confirm-mark-feed-read no
 wrap-scroll yes
 
-# filter
-ignore-mode "display"
-ignore-article "*" "content =~ \"Apple|Kde\""
-ignore-article "*" "title =~ \"Apple\|Kde\""
-
 external-url-viewer "urlscan -dc -r 'linkhandler {}'"
 
 bind-key j down
