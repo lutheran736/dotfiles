@@ -32,16 +32,30 @@ map("n", "<leader>fm", function()
   require("conform").format { lsp_fallback = true }
 end, { desc = "general format file" })
 
+-- Terminal
+map("n", "<leader>vf", function()
+  require("toggleterm").toggle_command("direction=float")
+end)
+
+map("n", "<leader>v", function()
+  require("toggleterm").toggle_command("direction=vertical")
+end)
+
+map("n", "<leader>h", function()
+  require("toggleterm").toggle()
+end)
+
+
 -- Gitsigns
-map("n","<leader>gp","<cmd>Gitsigns preview_hunk<cr>")
-map("n","<leader>gt","<cmd>Gitsigns toggle_current_line_blame<cr>")
+map("n", "<leader>gp", "<cmd>Gitsigns preview_hunk<cr>")
+map("n", "<leader>gt", "<cmd>Gitsigns toggle_current_line_blame<cr>")
 
 -- global lsp mappings
 map("n", "<leader>ds", vim.diagnostic.setloclist, { desc = "LSP diagnostic loclist" })
 
 -- buffer
 map("n", "<leader>b", "<cmd>enew<CR>", { desc = "buffer new" })
-map("n","<leader>bv","<cmd>vsp<cr>")
+map("n", "<leader>bv", "<cmd>vsp<cr>")
 
 -- Comment
 map("n", "<leader>/", "gcc", { desc = "toggle comment", remap = true })
@@ -51,7 +65,7 @@ map("v", "<leader>/", "gc", { desc = "toggle comment", remap = true })
 map("n", "<C-n>", "<cmd>NvimTreeToggle<CR>", { desc = "nvimtree toggle window" })
 map("n", "<leader>e", "<cmd>NvimTreeFocus<CR>", { desc = "nvimtree focus window" })
 
--- ZenMode 
+-- ZenMode
 map("n", "<leader>zm", ":ZenMode<cr>")
 
 -- markdown preview

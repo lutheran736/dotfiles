@@ -2,8 +2,8 @@ return {
   {
     'nvim-lualine/lualine.nvim',
     lazy = false,
-    config = function ()
-     require("config.lualine")
+    config = function()
+      require("config.lualine")
     end,
   },
 
@@ -63,7 +63,7 @@ return {
     end,
   },
 
-{
+  {
     "neovim/nvim-lspconfig",
     event = "User FilePost",
     config = function()
@@ -143,7 +143,7 @@ return {
   {
     "vimwiki/vimwiki",
     event = "BufEnter *.md",
-    cmd = {"VimwikiIndex"},
+    cmd = { "VimwikiIndex" },
     keys = { "<leader>ww", "<leader>wt" },
     init = function()
       vim.g.vimwiki_list = {
@@ -156,12 +156,12 @@ return {
     end,
   },
 
-    {
+  {
     "xiyaowong/transparent.nvim",
-    lazy = false, --this was SUPER IMPORTANT
+    lazy = false,                    --this was SUPER IMPORTANT
     config = function()
       require("transparent").setup { -- Optional, you don't have to run setup.
-        groups = { -- table: default groups
+        groups = {                   -- table: default groups
           "Normal",
           "NormalNC",
           "Comment",
@@ -189,7 +189,7 @@ return {
           "EndOfBuffer",
         },
         extra_groups = { "NvimTreeNormal", "NvimTreeNormalNC" }, -- and this was super important as well
-        exclude_groups = {}, -- table: groups you don't want to clear
+        exclude_groups = {},                                     -- table: groups you don't want to clear
       }
     end,
   },
@@ -200,7 +200,14 @@ return {
     build = function() vim.fn["mkdp#util#install"]() end,
   },
 
-  {'norcalli/nvim-colorizer.lua',
-    cmd = {"ColorizerToggle","ColorizerAttachToBuffer","ColorizerDettachFromBuffer","ColorizerRelaodAllBuffer"},
+  {
+    'norcalli/nvim-colorizer.lua',
+    cmd = { "ColorizerToggle", "ColorizerAttachToBuffer", "ColorizerDettachFromBuffer", "ColorizerRelaodAllBuffer" },
   },
+
+  {
+    'akinsho/toggleterm.nvim',
+    version = "*",
+  }
+
 }
