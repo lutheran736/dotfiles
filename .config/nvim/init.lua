@@ -26,7 +26,7 @@ require("lazy").setup({
 
 require "options"
 require "autocmd"
-require("config.lsp-server")
+require "config.lsp-server"
 
 --require "config.lazy"
 vim.schedule(function()
