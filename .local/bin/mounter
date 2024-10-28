@@ -18,7 +18,7 @@ mountedphones="$(grep "simple-mtpfs" /etc/mtab)"
 [ -n "$mountedphones" ] && phones="$(for phone in $phones; do
 	for mounted in $mountedphones; do
 		escphone="$(escape "$phone")"
-		[[ "$mounted" =~ $escphone ]] && break 1
+		[[ "$mounted" =~ "$escphone" ]] && break 1
 	done && continue 1
 	echo "$phone"
 done)"
