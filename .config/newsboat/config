@@ -5,7 +5,6 @@ reload-time 120
 
 #Feed settings 
 prepopulate-query-feeds yes 
-max-items 100
 confirm-mark-feed-read no
 wrap-scroll yes
 
