@@ -32,7 +32,9 @@ map("n", "<leader>fm", function()
   require("conform").format { lsp_fallback = true }
 end, { desc = "general format file" })
 
--- Terminal
+-- terminal
+map("t", "<C-x>", "<C-\\><C-N>", { desc = "terminal escape terminal mode" })
+
 map("n", "<leader>vf", function()
   require("toggleterm").toggle_command("direction=float")
 end)
@@ -42,7 +44,7 @@ map("n", "<leader>v", function()
 end)
 
 map("n", "<leader>h", function()
-  require("toggleterm").toggle()
+  require("toggleterm").toggle_command("direction=horizontal")
 end)
 
 
