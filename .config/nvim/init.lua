@@ -14,15 +14,15 @@ vim.opt.rtp:prepend(lazypath)
 local lazy_config = require "config.lazy"
 
 require("lazy").setup({
-    {
-      'navarasu/onedark.nvim',
-      lazy = false,
-     config = function()
-      vim.cmd("colorscheme onedark")
+  {
+    'uZer/pywal16.nvim',
+    lazy = false,
+    config = function()
+      vim.cmd.colorscheme("pywal16")
     end,
-    },
-    { import = "plugins" },
-},lazy_config)
+  },
+  { import = "plugins" },
+}, lazy_config)
 
 require "options"
 require "autocmd"
@@ -30,5 +30,5 @@ require "config.lsp-server"
 
 --require "config.lazy"
 vim.schedule(function()
-require "mappings"
+  require "mappings"
 end)
