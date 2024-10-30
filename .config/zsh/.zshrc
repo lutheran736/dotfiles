@@ -30,6 +30,7 @@ autoload -U compinit
 zstyle ':completion:*' menu select
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zmodload zsh/complist
 compinit
@@ -80,13 +81,18 @@ bindkey -s '^f' '^ucd "$(dirname "$(fzf)")"\n'
 
 bindkey '^[[P' delete-char
 
-bindkey  "^[[H"   beginning-of-line
-bindkey  "^[[4~"   end-of-line
 
-if [ -n "$TMUX" ];then
-    bindkey "^[OH" beginning-of-line
-    bindkey "^[OF" end-of-line
+bindkey  "^[[H"   beginning-of-line                             # Home key
+bindkey  "\e[1~"  beginning-of-line                             # Home key
+if [[ "${terminfo[khome]}" != "" ]]; then
+    bindkey "${terminfo[khome]}" beginning-of-line                # [Home] - Go to beginning of line
 fi
+bindkey '^[[8~' end-of-line                                     # End key
+bindkey '^[[F' end-of-line                                      # End key
+if [[ "${terminfo[kend]}" != "" ]]; then
+    bindkey "${terminfo[kend]}" end-of-line                       # [End] - Go to end of line
+fi
+
 
 # Edit line in vim with ctrl-e:
 autoload edit-command-line; zle -N edit-command-line
