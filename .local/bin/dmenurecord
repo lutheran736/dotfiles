@@ -12,147 +12,173 @@
 getdim() { xrandr | grep -oP '(?<=current ).*(?=,)' | tr -d ' '; }
 
 updateicon() {
-    echo "$1" >/tmp/recordingicon
-    pkill -RTMIN+9 "${STATUSBAR:-dwmblocks}"
+  echo "$1" >/tmp/recordingicon
+  pkill -RTMIN+9 "${STATUSBAR:-dwmblocks}"
 }
 
 killrecording() {
-    recpid="$(cat /tmp/recordingpid)"
-    kill -15 "$recpid"
-    rm -f /tmp/recordingpid
-    updateicon ""
-    pkill -RTMIN+9 "${STATUSBAR:-dwmblocks}"
+  recpid="$(cat /tmp/recordingpid)"
+  kill -15 "$recpid"
+  rm -f /tmp/recordingpid
+  updateicon ""
+  pkill -RTMIN+9 "${STATUSBAR:-dwmblocks}"
 }
 
 screencast() {
-    ffmpeg -y \
-        -f x11grab \
-        -framerate 30 \
-        -s "$(getdim)" \
-        -i "$DISPLAY" \
-        -r 24 \
-        -use_wallclock_as_timestamps 1 \
-        -f alsa -thread_queue_size 1024 -i default \
-        -c:v h264 \
-        -crf 0 -preset ultrafast -c:a aac \
-        "$HOME/screencast-$(date '+%y%m%d-%H%M-%S').mp4" &
-    echo $! >/tmp/recordingpid
-    updateicon "⏺️🎙️"
+  ffmpeg -y \
+    -f x11grab \
+    -framerate 30 \
+    -s "$(getdim)" \
+    -i "$DISPLAY" \
+    -r 24 \
+    -use_wallclock_as_timestamps 1 \
+    -f alsa -thread_queue_size 1024 -i default \
+    -c:v h264 \
+    -crf 0 -preset ultrafast -c:a aac \
+    "$HOME/screencast-$(date '+%y%m%d-%H%M-%S').mp4" &
+  echo $! >/tmp/recordingpid
+  updateicon "⏺️🎙️"
 }
 
 video_monitor() {
-    ffmpeg -vaapi_device /dev/dri/renderD128 \
-        -f pulse \
-        -thread_queue_size 1024 -i default \
-        -f pulse \
-        -thread_queue_size 1024 \
-        -i alsa_output.pci-0000_00_1b.0.analog-stereo.monitor \
-        -f x11grab \
-        -thread_queue_size 2048 \
-        -s "$(getdim)" \
-        -i "$DISPLAY" \
-        -vf format=nv12,hwupload \
-        -c:v h264_vaapi -qp 24 \
-        -map 1:a -map 2:v \
-        "$HOME/Videos/video-$(date '+%y%m%d-%H%M-%S').mp4" &
-    echo $! >/tmp/recordingpid
-    updateicon "⏺️"
+  ffmpeg -vaapi_device /dev/dri/renderD128 \
+    -f pulse \
+    -thread_queue_size 1024 -i default \
+    -f pulse \
+    -thread_queue_size 1024 \
+    -i alsa_output.pci-0000_00_1b.0.analog-stereo.monitor \
+    -f x11grab \
+    -thread_queue_size 2048 \
+    -s "$(getdim)" \
+    -i "$DISPLAY" \
+    -vf "format=nv12,hwupload" \
+    -c:v h264_vaapi -qp 24 \
+    -map 1:a -map 2:v \
+    "$HOME/Videos/video-$(date '+%y%m%d-%H%M-%S').mp4" &
+  echo $! >/tmp/recordingpid
+  updateicon "⏺️"
 }
 
 video_microfono_monitor() {
-    ffmpeg \
-        -vaapi_device /dev/dri/renderD128 \
-        -f pulse \
-        -thread_queue_size 1024 \
-        -i default \
-        -f pulse -thread_queue_size 1024 \
-        -i alsa_output.pci-0000_00_1b.0.analog-stereo.monitor \
-        -f x11grab \
-        -thread_queue_size 2048 \
-        -video_size 1366x768 \
-        -i :0 \
-        -vf 'format=nv12,hwupload' \
-        -c:v h264_vaapi \
-        -qp 17 -map 2:v \
-        "$HOME/Videos/video-$(date '+%y%m%d-%H%M-%S').mp4" &
-    echo $! >/tmp/recordingpid
-    updateicon "⏺️"
+  ffmpeg \
+    -vaapi_device /dev/dri/renderD128 \
+    -f pulse \
+    -thread_queue_size 1024 \
+    -i default \
+    -f pulse -thread_queue_size 1024 \
+    -i alsa_output.pci-0000_00_1b.0.analog-stereo.monitor \
+    -f x11grab \
+    -thread_queue_size 2048 \
+    -video_size 1366x768 \
+    -i :0 \
+    -vf "format=nv12,hwupload" \
+    -c:v h264_vaapi \
+    -qp 17 -map 2:v \
+    "$HOME/Videos/video-$(date '+%y%m%d-%H%M-%S').mp4" &
+  echo $! >/tmp/recordingpid
+  updateicon "⏺️"
 }
 
 video() {
-    ffmpeg \
-        -f x11grab \
-        -framerate 30 \
-        -s "$(getdim)" \
-        -i "$DISPLAY" \
-        -c:v libx264 -qp 0 -r 30 \
-        "$HOME/video-$(date '+%y%m%d-%H%M-%S').mkv" &
-    echo $! >/tmp/recordingpid
-    updateicon "⏺️"
+  ffmpeg \
+    -f x11grab \
+    -framerate 30 \
+    -s "$(getdim)" \
+    -i "$DISPLAY" \
+    -c:v libx264 -qp 0 -r 30 \
+    "$HOME/video-$(date '+%y%m%d-%H%M-%S').mkv" &
+  echo $! >/tmp/recordingpid
+  updateicon "⏺️"
 }
 
 webcamhidef() {
-    ffmpeg \
-        -f v4l2 \
-        -i /dev/video0 \
-        -video_size 1920x1080 \
-        "$HOME/webcam-$(date '+%y%m%d-%H%M-%S').mkv" &
-    echo $! >/tmp/recordingpid
-    updateicon "🎥"
+  ffmpeg \
+    -f v4l2 \
+    -i /dev/video0 \
+    -video_size 1920x1080 \
+    "$HOME/webcam-$(date '+%y%m%d-%H%M-%S').mkv" &
+  echo $! >/tmp/recordingpid
+  updateicon "🎥"
 }
 
 webcam() {
-    ffmpeg \
-        -f v4l2 \
-        -i /dev/video0 \
-        -video_size 640x480 \
-        "$HOME/webcam-$(date '+%y%m%d-%H%M-%S').mkv" &
-    echo $! >/tmp/recordingpid
-    updateicon "🎥"
+  ffmpeg \
+    -f v4l2 \
+    -i /dev/video0 \
+    -video_size 640x480 \
+    "$HOME/webcam-$(date '+%y%m%d-%H%M-%S').mkv" &
+  echo $! >/tmp/recordingpid
+  updateicon "🎥"
 }
 
 audio() {
-    ffmpeg \
-        -f alsa -i default \
-        -c:a flac \
-        "$HOME/audio-$(date '+%y%m%d-%H%M-%S').flac" &
-    echo $! >/tmp/recordingpid
-    updateicon "🎙️"
+  ffmpeg \
+    -f alsa -i default \
+    -c:a flac \
+    "$HOME/audio-$(date '+%y%m%d-%H%M-%S').flac" &
+  echo $! >/tmp/recordingpid
+  updateicon "🎙️"
 }
 
 askrecording() {
-    choice=$(printf "screencast\\nvideo\\nvideo_monitor\\nvideo_microfono_monitor\\nvideo selected\\naudio\\nwebcam\\nwebcam (hi-def)" | dmenu -i -p "Select recording style:")
-    case "$choice" in
-    screencast) screencast ;;
-    audio) audio ;;
-    video) video ;;
-    video_monitor) video_monitor ;;
-    video_microfono_monitor) video_microfono_monitor ;;
-    *selected) videoselected ;;
-    webcam) webcam ;;
-    "webcam (hi-def)") webcamhidef ;;
-    esac
+  choice=$(printf "screencast\\nvideo\\nvideo_monitor\\nvideo_microfono_monitor\\nvideo selected\\nvideoselectedM\\naudio\\nwebcam\\nwebcam (hi-def)" | dmenu -i -p "Select recording style:")
+  case "$choice" in
+  screencast) screencast ;;
+  audio) audio ;;
+  video) video ;;
+  video_monitor) video_monitor ;;
+  video_microfono_monitor) video_microfono_monitor ;;
+  videoselectedM) videoselectedM ;;
+  *selected) videoselected ;;
+  webcam) webcam ;;
+  "webcam (hi-def)") webcamhidef ;;
+  esac
 }
 
 asktoend() {
-    response=$(printf "No\\nYes" | dmenu -i -p "Recording still active. End recording?") &&
-        [ "$response" = "Yes" ] && killrecording
+  response=$(printf "No\\nYes" | dmenu -i -p "Recording still active. End recording?") &&
+    [ "$response" = "Yes" ] && killrecording
 }
 
 videoselected() {
-    slop -f "%x %y %w %h" >/tmp/slop
-    read -r X Y W H </tmp/slop
-    rm /tmp/slop
+  slop -f "%x %y %w %h" >/tmp/slop
+  read -r X Y W H </tmp/slop
+  rm /tmp/slop
 
-    ffmpeg \
-        -f x11grab \
-        -framerate 30 \
-        -video_size "$W"x"$H" \
-        -i :0.0+"$X,$Y" \
-        -c:v libx264 -qp 0 -r 30 \
-        "$HOME/box-$(date '+%y%m%d-%H%M-%S').mkv" &
-    echo $! >/tmp/recordingpid
-    updateicon "⏺️"
+  ffmpeg \
+    -f x11grab \
+    -framerate 30 \
+    -video_size "$W"x"$H" \
+    -i :0.0+"$X,$Y" \
+    -c:v libx264 -qp 0 -r 30 \
+    "$HOME/box-$(date '+%y%m%d-%H%M-%S').mkv" &
+  echo $! >/tmp/recordingpid
+  updateicon "⏺️"
+}
+
+videoselectedM() {
+  slop -f "%x %y %w %h" >/tmp/slop
+  read -r X Y W H </tmp/slop
+  rm /tmp/slop
+
+  ffmpeg \
+    -vaapi_device /dev/dri/renderD128 \
+    -f pulse \
+    -thread_queue_size 1024 \
+    -i default \
+    -f pulse \
+    -thread_queue_size 1024 \
+    -i alsa_output.pci-0000_00_1b.0.analog-stereo.monitor \
+    -f x11grab \
+    -thread_queue_size 2048 \
+    -s "${W}x${H}" \
+    -i ":0.0+${X},${Y}" \
+    -vf "format=nv12,hwupload" \
+    -c:v h264_vaapi -qp 0 -r 30 \
+    -map 1:a -map 2:v \
+    "${HOME}/Videos/box-$(date +%y%m%d-%H%M-%S).mp4" &
+  echo $! >/tmp/recordingpid
+  updateicon "⏺️"
 }
 
 case "$1" in
@@ -161,6 +187,7 @@ audio) audio ;;
 video) video ;;
 video_monitor) video_monitor ;;
 video_microfono_monitor) video_microfono_monitor ;;
+videoselectedM) videoselectedM ;;
 *selected) videoselected ;;
 kill) killrecording ;;
 *) ([ -f /tmp/recordingpid ] && asktoend && exit) || askrecording ;;
