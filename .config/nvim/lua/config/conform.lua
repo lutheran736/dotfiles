@@ -6,7 +6,10 @@ local options = {
     c = { "clang-format" },
     bash = { "shfmt" },
     sh = { "shfmt" },
-    zsh = { "beautysh" }
+    zsh = { "beautysh" },
+    markdown = { "prettier" },
+    yaml = { "prettier" },
+    yml = { "prettier" }
   },
 }
 return options
