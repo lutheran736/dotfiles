@@ -36,7 +36,7 @@ if [ "$(cat "$battery/status" 2>&1)" = "Discharging" ]; then
     case "$capacity" in
     (9[0-9]|100) status=" " ;;
     (7[0-9]|8[0-9]) status=" " ;;
-    (4[0-9]|5[0-9]|6[0-9]) status="" ;;
+    (4[0-9]|5[0-9]|6[0-9]) status=" " ;;
     (2[0-9]|3[0-9]) status=" " ;;
     (0[0-9]|1[0-9]|20) status=" " ;;
     esac
