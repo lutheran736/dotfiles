@@ -3,6 +3,8 @@ local o = vim.o
 local g = vim.g
 
 -------------------------------------- options ------------------------------------------
+o.termguicolors = true
+
 o.laststatus = 3
 o.showmode = false
 
@@ -10,10 +12,17 @@ o.clipboard = "unnamedplus"
 o.cursorline = true
 o.cursorlineopt = "number"
 
+-- Number of screen lines to keep above and below the cursor
+o.scrolloff = 8
+
 -- Indenting
 o.expandtab = true
 o.shiftwidth = 2
 o.smartindent = true
+o.cindent = true
+o.autoindent = true
+o.wrap = true
+o.textwidth = 300
 o.tabstop = 2
 o.softtabstop = 2
 
@@ -25,6 +34,7 @@ o.mouse = "a"
 -- Numbers
 o.number = true
 o.numberwidth = 2
+o.relativenumber = true
 o.ruler = false
 
 -- disable nvim intro
@@ -50,7 +60,6 @@ g.loaded_perl_provider = 0
 g.loaded_ruby_provider = 0
 
 -- add binaries installed by mason.nvim to path
-local is_windows = vim.fn.has "win32" ~= 0
-local sep = is_windows and "\\" or "/"
-local delim = is_windows and ";" or ":"
+local sep =  "/"
+local delim =  ":"
 vim.env.PATH = table.concat({ vim.fn.stdpath "data", "mason", "bin" }, sep) .. delim .. vim.env.PATH
