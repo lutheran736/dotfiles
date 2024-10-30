@@ -47,7 +47,6 @@ map("n", "<leader>h", function()
   require("toggleterm").toggle_command("direction=horizontal")
 end)
 
-
 -- Gitsigns
 map("n", "<leader>gp", "<cmd>Gitsigns preview_hunk<cr>")
 map("n", "<leader>gt", "<cmd>Gitsigns toggle_current_line_blame<cr>")
@@ -57,7 +56,10 @@ map("n", "<leader>ds", vim.diagnostic.setloclist, { desc = "LSP diagnostic locli
 
 -- buffer
 map("n", "<leader>b", "<cmd>enew<CR>", { desc = "buffer new" })
+map("n", "<leader>bc", "<cmd>bd<cr>")
+map("n", "<leader>bd", "<cmd>bdelete<cr>")
 map("n", "<leader>bv", "<cmd>vsp<cr>")
+map("n", "<leader>bh", "<cmd>split<cr>")
 
 -- Comment
 map("n", "<leader>/", "gcc", { desc = "toggle comment", remap = true })
