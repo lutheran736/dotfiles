@@ -26,8 +26,15 @@ autocmd({ "UIEnter", "BufReadPost", "BufNewFile" }, {
   end,
 })
 
+autocmd("TextYankPost", {
+  group = num_au,
+  callback = function()
+    vim.highlight.on_yank({ higroup = "Visual", timeout = 120 })
+  end,
+})
+
 autocmd({ "BufRead", "BufNewFile" }, {
-  pattern = { "/tmp/calcurse*","~/.calcurse/notes/*" },
+  pattern = { "/tmp/calcurse*", "~/.calcurse/notes/*" },
   command = "set filetype=markdown",
 })
 
@@ -36,37 +43,37 @@ autocmd({ "BufWritePre", "BufNewFile" }, {
   command = [[%s/^--$/-- /e]],
 })
 
-autocmd({"BufRead","BufNewFile"}, {
+autocmd({ "BufRead", "BufNewFile" }, {
   pattern = { "Xresources,Xdefaults,xresources,xdefaults" },
   command = "set filetype=xdefaults",
 })
 
-autocmd({"BufRead","BufNewFile"}, {
+autocmd({ "BufRead", "BufNewFile" }, {
   pattern = { "*.css", "*.sh", "*.html" },
   command = "ColorizerAttachToBuffer",
 })
 
-autocmd({"VimLeave"}, {
-    pattern = { "*.tex" },
-    command = "!texclear %"
+autocmd({ "VimLeave" }, {
+  pattern = { "*.tex" },
+  command = "!texclear %"
 })
 
-autocmd({"BufRead","BufNewFile"},{
- pattern = {"*md"},
- command = [[setlocal spell! spelllang=en]]
+autocmd({ "BufRead", "BufNewFile" }, {
+  pattern = { "*md" },
+  command = [[setlocal spell! spelllang=en]]
 })
 
-autocmd({"BufRead","BufNewFile"},{
- pattern = {"*.tex"},
- command = [[setlocal spell! spelllang=es]]
+autocmd({ "BufRead", "BufNewFile" }, {
+  pattern = { "*.tex" },
+  command = [[setlocal spell! spelllang=es]]
 })
 
-autocmd({"BufWritePost"},{
-  pattern = {"*/dwmblocks/config.h*"},
+autocmd({ "BufWritePost" }, {
+  pattern = { "*/dwmblocks/config.h*" },
   command = [[!cd ~/.local/src/dwmblocks; sudo make install && { killall -q dwmblocks;setsid -f dwmblocks}]]
 })
 
-autocmd({"BufWritePost"},{
-  pattern = {"*/dwm/config.h*"},
+autocmd({ "BufWritePost" }, {
+  pattern = { "*/dwm/config.h*" },
   command = [[!cd ~/.local/src/dwm; sudo make install]]
 })
