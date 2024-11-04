@@ -1,11 +1,12 @@
 #  General Configurations
 --paths $HOME/Downloads/yt-dlp/    # Download directory.
 --output %(title)s.%(ext)s         # Media file name format.
---sub-langs es,en                  # Spanish and English subtitle language.
+--sub-langs "es,en"                # Spanish and English subtitle language.
 --progress                         # Show progress bar.
 # --concurrent-fragments 5         # Download N video fragments in parallel.
 --restrict-filenames               # File names to ASCII only, avoid "&" and spaces.
 --no-overwrites                    # Do not overwrite any media files.
+--no-mtime                         # Do not use the Last-modified header to set the file modification time
 
 #  Faster downloads
 #  wiki: https://wiki.archlinux.org/title/yt-dlp#Faster_downloads
@@ -23,8 +24,10 @@
 --embed-metadata # Embed metadata.
 
 # sponsorblock
---sponsorblock-remove all
+--sponsorblock-remove "music_offtopic,sponsor,intro,outro,selfpromo,preview,filler,interaction"
+--sponsorblock-mark "all" 
 
+# Make all connections via IPv4
 --force-ipv4
 
 # Audio and video download formats
@@ -40,37 +43,37 @@
 # - vp9: Not supported ❌.
 
 # 🎦 8K 60fps, 7680 × 4320:
-#-f "bv[height<=4500][ext=mp4][fps<=60][vcodec^=avc1][vcodec!=vp9]+ba[ext=m4a][abr<=192000]"
+#-f "bv[height<=4500][ext=mp4][fps<=??60][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=192000]"
 
 # 🎦 8K 30fps, 7680 × 4320:
-#-f "bv[height<=4500][ext=mp4][fps<=30][vcodec^=avc1][vcodec!=vp9]+ba[ext=m4a][abr<=192000]"
+#-f "bv[height<=4500][ext=mp4][fps<=??30][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=192000]"
 
 # 🎫 4K 60fps, 3840 × 2160:
-#-f "bv[height<=2500][ext=mp4][fps<=60][vcodec^=avc1][vcodec!=vp9]+ba[ext=m4a][abr<=192000]"
+#-f "bv[height<=2500][ext=mp4][fps<=?60?][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=192000]"
 
 # 🎫 4K 30fps, 3840 × 2160:
-#-f "bv[height<=2500][ext=mp4][fps<=30][vcodec^=avc1][vcodec!=vp9]+ba[ext=m4a][abr<=192000]"
+#-f "bv[height<=2500][ext=mp4][fps<=?30][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=192000]"
 
 # 📽️ 2K 60fps, 2560 × 1440:
-#-f "bv[height<=1800][ext=mp4][fps<=60][vcodec^=avc1][vcodec!=vp9]+ba[ext=m4a][abr<=96000]"
+#-f "bv[height<=1800][ext=mp4][fps<=?60][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=96000]"
 
 # 📽️ 2K 30fps, 2560 × 1440:
-#-f "bv[height<=1800][ext=mp4][fps<=30][vcodec^=avc1][vcodec!=vp9]+ba[ext=m4a][abr<=96000]"
+#-f "bv[height<=1800][ext=mp4][fps<=?30][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=96000]"
 
 # 🎬 FHD 60fps, 1920 x 1080:
-# -f "bv[height<=1200][ext=mp4][fps<=60][vcodec^=avc1][vcodec!=vp9]+ba[ext=m4a][abr<=48000]"
+# -f "bv[height<=1200][ext=mp4][fps<=?60][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=48000]"
 
 # 🎬 FHD 30fps, 1920 x 1080:
-#-f "bv[height<=1200][ext=mp4][fps<=30][vcodec^=avc1][vcodec!=vp9]+ba[ext=m4a][abr<=48000]"
+#-f "bv[height<=1200][ext=mp4][fps<=?30][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=48000]"
 
 # 🎥 HD 60fps, 1280 x 800:
-# -f "bv[height<=1200][ext=mp4][fps<=60][vcodec^=avc1][vcodec!=vp9]+ba[ext=m4a][abr<=44000]"
+# -f "bv[height<=1200][ext=mp4][fps<=?60][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=44000]"
 
 # 🎥 HD 30fps, 1280 x 800 (default):
--f "bv[height<=800][ext=mp4][fps<=30][vcodec^=avc1][vcodec!=vp9]+ba[ext=m4a][abr<=44000]"
+-f "bv[height<=800][ext=mp4][fps<=?30][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=44000][language~=es]"
 
 # 📹 SD 30fps, 854 x 480:
-#-f "bv[height<=500][ext=mp4][fps<=30][vcodec^=avc1][vcodec!=vp9]+ba[ext=m4a][abr<=44000]"
+#-f "bv[height<=500][ext=mp4][fps<=?30][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=44000]"
 
 # 📺 VGA 30fps, 640 × 360:
-#-f "bv[height<=400][ext=mp4][fps<=30][vcodec^=avc1][vcodec!=vp9]+ba[ext=m4a][abr<=44000]"
+#-f "bv[height<=400][ext=mp4][fps<=?30][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=44000]"
