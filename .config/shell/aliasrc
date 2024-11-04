@@ -115,7 +115,7 @@ alias \
     mkd="mkdir -pv" \
     yt="yt-dlp --embed-metadata -i" \
     yta="yt -x -f bestaudio/best" \
-    ytaa="yt -x -f 'bestaudio[ext=m4a]' --audio-quality 0" \
+    yta-m4a="yt -x -f 'bestaudio[ext=m4a]' --audio-quality 0" \
     ytt="yt --skip-download --write-thumbnail" \
     ffmpeg="ffmpeg -hide_banner"
 
@@ -142,8 +142,6 @@ alias \
     yta-best="yt-dlp -x --audio-format best " \
     yta-flac="yt-dlp -x --audio-format flac " \
     yta-mp3="yt-dlp -x --audio-format mp3 --audio-quality 0" \
-    ytv-best="yt-dlp -f 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]'" \
-    yta-mp4="yt-dlp -f 'bv*[ext=mp4][height<=720]+ba[ext=m4a]/b[ext=mp4][height<=720]'"
 
 # termbin
 alias \
