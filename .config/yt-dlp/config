@@ -70,7 +70,7 @@
 # -f "bv[height<=1200][ext=mp4][fps<=?60][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=44000]"
 
 # 🎥 HD 30fps, 1280 x 800 (default):
--f "bv[height<=800][ext=mp4][fps<=?30][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=44000][language~=es]"
+-f "bv[height<=800][ext=mp4][fps<=?30][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=44000]"
 
 # 📹 SD 30fps, 854 x 480:
 #-f "bv[height<=500][ext=mp4][fps<=?30][vcodec~='^(avc|h264)']+ba[ext=m4a][abr<=44000]"
