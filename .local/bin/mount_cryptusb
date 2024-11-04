@@ -1,0 +1,3 @@
+#!/bin/sh 
+usb=$(lsblk -rpo "uuid,name" | grep -E 'sdc1' | awk '{print $1}')
+[ -n "$usb" ] && ${TERMINAL:-st} -n floatterm -g 60x1 -e sudo cryptsetup open "$usb" drive && sudo mount /dev/mapper/drive /mnt 
