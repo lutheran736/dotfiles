@@ -6,9 +6,10 @@ end
 
 map("n", ";", ":", { desc = "CMD enter command mode" })
 map("i", "jk", "<ESC>")
-map("n", "<leader>c", "<cmd>:!compiler '%:p'<CR>")
-map("n", "<leader>oe", "<cmd>:setlocal spell! spelllang=en<CR>")
-map("n", "<leader>oa", "<cmd>:setlocal spell! spelllang=es<CR>")
+map("n", "<leader>c", "<cmd>!compiler '%:p'<CR>")
+map("n", "<leader>oe", "<cmd>setlocal spell! spelllang=en<CR>")
+map("n", "<leader>oa", "<cmd>setlocal spell! spelllang=es<CR>")
+map("n", "<leader>p", "<cmd>!opout '%:p'<CR>")
 map("n", "<leader>s", Sudo, {})
 
 map("i", "<C-b>", "<ESC>^i", { desc = "move beginning of line" })
