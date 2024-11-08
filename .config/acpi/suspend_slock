@@ -1,0 +1,13 @@
+#!/bin/bash
+
+username=$(who | awk '{print $1}' | uniq)
+userhome=/home/$username
+export XAUTHORITY="$userhome/.Xauthority"
+export DISPLAY=":0.0"
+
+su "$username" -c "/usr/bin/xset dpms force suspend" &
+su "$username" -c "/usr/bin/slock" &
+sleep 1s
+
+echo -n deep >/sys/power/mem_sleep
+echo -n mem >/sys/power/state
