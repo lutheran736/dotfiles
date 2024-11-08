@@ -77,7 +77,6 @@ return {
     end,
   },
 
-
   -- load luasnips + cmp related in insert mode only
   {
     "hrsh7th/nvim-cmp",
@@ -148,7 +147,7 @@ return {
 
   {
     "vimwiki/vimwiki",
-    event = "BufEnter *.md",
+    ft = "markdown",
     cmd = { "VimwikiIndex" },
     keys = { "<leader>ww", "<leader>wt" },
     init = function()
@@ -158,44 +157,6 @@ return {
           syntax = "markdown",
           ext = "md",
         },
-      }
-    end,
-  },
-
-  {
-    "xiyaowong/transparent.nvim",
-    lazy = false,                    --this was SUPER IMPORTANT
-    config = function()
-      require("transparent").setup { -- Optional, you don't have to run setup.
-        groups = {                   -- table: default groups
-          "Normal",
-          "NormalNC",
-          "Comment",
-          "Constant",
-          "Special",
-          "Identifier",
-          "Statement",
-          "PreProc",
-          "Type",
-          "Underlined",
-          "Todo",
-          "String",
-          "Function",
-          "Conditional",
-          "Repeat",
-          "Operator",
-          "Structure",
-          "LineNr",
-          "NonText",
-          "SignColumn",
-          "CursorLine",
-          "CursorLineNr",
-          "StatusLine",
-          "StatusLineNC",
-          "EndOfBuffer",
-        },
-        extra_groups = { "NvimTreeNormal", "NvimTreeNormalNC" }, -- and this was super important as well
-        exclude_groups = {},                                     -- table: groups you don't want to clear
       }
     end,
   },
@@ -214,6 +175,11 @@ return {
   {
     'akinsho/toggleterm.nvim',
     version = "*",
-  }
+  },
+
+  {
+    "hiphish/rainbow-delimiters.nvim",
+    event = "User FilePost"
+  },
 
 }
