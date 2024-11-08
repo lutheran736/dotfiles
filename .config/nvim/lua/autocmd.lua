@@ -27,7 +27,6 @@ autocmd({ "UIEnter", "BufReadPost", "BufNewFile" }, {
 })
 
 autocmd("TextYankPost", {
-  group = num_au,
   callback = function()
     vim.highlight.on_yank({ higroup = "Visual", timeout = 120 })
   end,
@@ -35,17 +34,43 @@ autocmd("TextYankPost", {
 
 autocmd({ "BufRead", "BufNewFile" }, {
   pattern = { "/tmp/calcurse*", "~/.calcurse/notes/*" },
-  command = "set filetype=markdown",
+  command = "set filetype=markdown"
 })
 
-autocmd({ "BufWritePre", "BufNewFile" }, {
-  pattern = { "*neomutt*" },
-  command = [[%s/^--$/-- /e]],
+-- Restore cursor position
+autocmd({ "BufReadPost" }, {
+  pattern = { "*" },
+  callback = function()
+    vim.cmd('silent! normal! g`"zv', false)
+  end,
+})
+
+autocmd({ "BufWritePre" }, {
+  pattern = { "*" },
+  callback = function()
+    vim.cmd([[%s/\s\+$//e]])
+    vim.cmd([[%s/\n\+\%$//e]])
+  end,
+})
+
+autocmd({ "bufwritepre" }, {
+  pattern = { "*.[ch]" },
+  command = [[%s/\%$/\r/e]],
 })
 
 autocmd({ "BufRead", "BufNewFile" }, {
   pattern = { "Xresources,Xdefaults,xresources,xdefaults" },
   command = "set filetype=xdefaults",
+})
+
+autocmd({ "BufWritePost" }, {
+  pattern = { "Xresources,Xdefaults,xresources,xdefaults" },
+  command = "!xrdb %",
+})
+
+autocmd({ "BufWritePost" }, {
+  pattern = { "bm-files", "bm-dirs" },
+  command = "!shortcuts",
 })
 
 autocmd({ "BufRead", "BufNewFile" }, {
@@ -63,9 +88,14 @@ autocmd({ "BufRead", "BufNewFile" }, {
   command = [[setlocal spell! spelllang=en]]
 })
 
-autocmd({ "BufRead", "BufNewFile" }, {
+autocmd({ "VimLeave" }, {
   pattern = { "*.tex" },
   command = [[setlocal spell! spelllang=es]]
+})
+
+autocmd({ "FileType" }, {
+  pattern = { "*" },
+  command = [[setlocal formatoptions-=c formatoptions-=r formatoptions-=o]]
 })
 
 autocmd({ "BufWritePost" }, {
