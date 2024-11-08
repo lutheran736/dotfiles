@@ -4,6 +4,12 @@ local g = vim.g
 
 -------------------------------------- options ------------------------------------------
 o.termguicolors = true
+vim.cmd.colors("habamax")
+
+vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
+vim.api.nvim_set_hl(0, "NeoTreeNormal", { bg = "none" })
+vim.api.nvim_set_hl(0, "NeoTreeNormalNC", { bg = "none" })
 
 o.laststatus = 3
 o.showmode = false
@@ -60,6 +66,6 @@ g.loaded_perl_provider = 0
 g.loaded_ruby_provider = 0
 
 -- add binaries installed by mason.nvim to path
-local sep =  "/"
-local delim =  ":"
+local sep = "/"
+local delim = ":"
 vim.env.PATH = table.concat({ vim.fn.stdpath "data", "mason", "bin" }, sep) .. delim .. vim.env.PATH
