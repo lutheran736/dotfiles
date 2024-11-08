@@ -1,11 +1,11 @@
 require('lualine').setup {
   options = {
-    theme = 'pywal16-nvim',
-    component_separators = '',
-    section_separators = { left = '', right = '' },
+    theme = 'auto',
+    component_separators = '|',
+    section_separators = '',
   },
   sections = {
-    lualine_a = { { 'mode', separator = { left = '' }, right_padding = 2 } },
+    lualine_a = { 'mode' },
     lualine_b = { 'filename', 'branch', 'diagnostics' },
     lualine_c = {
       '%=', --[[ add your center compoentnts here in place of this comment ]]
@@ -13,7 +13,7 @@ require('lualine').setup {
     lualine_x = {},
     lualine_y = { 'filetype', 'progress' },
     lualine_z = {
-      { 'location', separator = { right = '' }, left_padding = 2 },
+      { 'location' },
     },
   },
   inactive_sections = {
