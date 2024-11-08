@@ -79,6 +79,8 @@ bindkey -s '^b' '^ubc -lq\n'
 
 bindkey -s '^f' '^ucd "$(dirname "$(fzf)")"\n'
 
+bindkey -s '^k' '^uv -o "$(fzf --preview "less {}")"\n'
+
 bindkey '^[[P' delete-char
 
 
