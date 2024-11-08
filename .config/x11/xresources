@@ -9,13 +9,13 @@ Xft.lcdfilter:	lcddefault
 ! window padding
 st.borderpx: 20
 
-!-- values between 0.1  - 1.0 --! 
+!-- values between 0.1  - 1.0 --!
 
-*.alpha: 0.8 
+*.alpha: 0.8
 *.font: monospace:style:medium:pixelsize=15
 
 /* name		dark	light */
-/* black	0	8 */
+/*black	0	8 */
 /* red		1	9 */
 /* green	2	10 */
 /* yellow	3	11 */
