@@ -1,12 +1,13 @@
 #!/bin/sh
 
 setbg & # set the background with the `setbg` script
-xrdb -merge ~/.config/x11/xresources &
+xrdb -load ~/.config/x11/xresources &
 
-autostart="mpd xcompmgr dunst unclutter pipewire remaps batterynotify"
+autostart="mpd xcompmgr dunst unclutter pipewire remaps batterynotify sleeping"
 
 for program in $autostart; do
     pidof -sx "$program" || "$program" &
 done >/dev/null 2>&1
 
+dbus-update-activation-environment --all
 dbus-launch --sh-syntax --exit-with-session ssh-agent dwm
