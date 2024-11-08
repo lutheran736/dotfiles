@@ -6,29 +6,29 @@
 # if a music file or pdf, it will download,
 # otherwise it opens link in browser.
 if [ -z "$1" ]; then
-    url="$(xclip -o)"
+  url="$(xclip -o)"
 else
-    url="$1"
+  url="$1"
 fi
 
 case "$url" in
-    *mkv | *webm | *mp4 | *avi | *MP4 | *mp4?* | *MOV | *youtube.com/v* | *youtube.com/watch* | *youtube.com/embed* | *youtube.com/playlist* | *youtube.com/shorts* | *youtube.com/live* | *youtu.be* | *hooktube.com* | *bitchute.com* | *videos.lukesmith.xyz* | *odysee.com* | *rumble.com* | *ok.ru/video/* | *twitch.tv/videos* | *inv.nadeko.net/watch*)
-    setsid -f mpv "$url" >/dev/null 2>&1 || notify-send "failure to reproduce" &
-    ;;
+*mkv | *webm | *mp4 | *avi | *MP4 | *mp4?* | *MOV | *youtube.com/v* | *youtube.com/watch* | *youtube.com/embed* | *youtube.com/playlist* | *youtube.com/shorts* | *youtube.com/live* | *youtu.be* | *hooktube.com* | *bitchute.com* | *videos.lukesmith.xyz* | *odysee.com* | *rumble.com* | *ok.ru/video/* | *twitch.tv/videos* | *inv.nadeko.net/watch* | *drive.google.com/file/d/*view*)
+  setsid -f mpv "$url" >/dev/null 2>&1 || notify-send "failure to reproduce" &
+  ;;
 *png | *jpg | *jpe | *jpeg | *gif | *webp | *yt3.ggpht.com* | *preview.redd* | *img*)
-    nsxiv-url "$url" >/dev/null 2>&1 &
-    ;;
+  nsxiv-url "$url" >/dev/null 2>&1 &
+  ;;
 *pdf | *cbz | *cbr)
-    zathura-url "$url" >/dev/null 2>&1 &
-    ;;
+  zathura-url "$url" >/dev/null 2>&1 &
+  ;;
 *mp3 | *flac | *opus | *mp3?source* | *mp3?d* | *m4a | *ogg | *.mp3?*)
-    qndl "$url" 'curl -LO' >/dev/null 2>&1
-    ;;
+  qndl "$url" 'curl -LO' >/dev/null 2>&1
+  ;;
 *)
-    if [ -f "$url" ]; then
-        setsid -f "$TERMINAL" -e "$EDITOR" "$url" >/dev/null 2>&1
-    else
-        setsid -f "$BROWSER" "$url" >/dev/null 2>&1
-    fi
-    ;;
+  if [ -f "$url" ]; then
+    setsid -f "$TERMINAL" -e "$EDITOR" "$url" >/dev/null 2>&1
+  else
+    setsid -f "$BROWSER" "$url" >/dev/null 2>&1
+  fi
+  ;;
 esac
