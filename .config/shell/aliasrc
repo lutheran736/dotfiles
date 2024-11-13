@@ -173,7 +173,9 @@ alias \
     curse='CALCURSE_CALDAV_PASSWORD=$(pass caldav/sweetmask20) calcurse-caldav' \
     history="history 0" \
     rip="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -200 | nl" \
-    riplong="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -3000 | nl"
+    riplong="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -3000 | nl" \
+    tta="shuf -n 40 /usr/share/dict/words|tt -notheme"
+
 
 
 alias \
