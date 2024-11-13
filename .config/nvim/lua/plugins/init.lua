@@ -150,31 +150,14 @@ return {
     ft = "markdown",
     cmd = { "VimwikiIndex" },
     keys = { "<leader>ww", "<leader>wt" },
-    init = function()
-      vim.g.vimwiki_list = {
-        {
-          path = "~/docs/vimwiki",
-          syntax = "markdown",
-          ext = "md",
-        },
-      }
-    end,
-  },
-
-  {
-    "iamcco/markdown-preview.nvim",
-    cmd = { "MarkdownPreviewToggle" },
-    build = function() vim.fn["mkdp#util#install"]() end,
+    init = function ()
+      require("config.vimwiki")
+    end
   },
 
   {
     'norcalli/nvim-colorizer.lua',
     cmd = { "ColorizerToggle", "ColorizerAttachToBuffer", "ColorizerDettachFromBuffer", "ColorizerRelaodAllBuffer" },
-  },
-
-  {
-    'akinsho/toggleterm.nvim',
-    version = "*",
   },
 
   {
