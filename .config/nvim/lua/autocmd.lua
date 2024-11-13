@@ -45,6 +45,36 @@ autocmd({ "BufReadPost" }, {
   end,
 })
 
+-- Restore cursor position
+autocmd({ "FileType" }, {
+  pattern = { "*" },
+  callback = function()
+    vim.cmd [[
+    map <leader>c :w! \| !compiler "%:p"<CR>
+    cabbrev w!! execute 'silent! write !sudo tee % >/dev/null' <bar> edit!
+    setlocal formatoptions-=c formatoptions-=r formatoptions-=o
+    ]]
+  end,
+})
+
+autocmd({ "BufEnter" }, {
+  pattern = "*",
+  callback = function()
+    vim.cmd [[
+      cnoreabbrev W! w!
+      cnoreabbrev Q! q!
+      cnoreabbrev Qall! qall!
+      cnoreabbrev Wq wq
+      cnoreabbrev Wa wa
+      cnoreabbrev wQ wq
+      cnoreabbrev WQ wq
+      cnoreabbrev W w
+      cnoreabbrev Q q
+      cnoreabbrev Qall qall
+  ]]
+  end
+})
+
 autocmd({ "BufWritePre" }, {
   pattern = { "*" },
   callback = function()
@@ -60,12 +90,10 @@ autocmd({ "bufwritepre" }, {
 
 autocmd({ "BufRead", "BufNewFile" }, {
   pattern = { "Xresources,Xdefaults,xresources,xdefaults" },
-  command = "set filetype=xdefaults",
-})
-
-autocmd({ "BufWritePost" }, {
-  pattern = { "Xresources,Xdefaults,xresources,xdefaults" },
-  command = "!xrdb %",
+  callback = function()
+    vim.cmd("set filetype=xdefaults")
+    vim.cmd("!xrdb %")
+  end
 })
 
 autocmd({ "BufWritePost" }, {
@@ -73,8 +101,8 @@ autocmd({ "BufWritePost" }, {
   command = "!shortcuts",
 })
 
-autocmd({ "BufRead", "BufNewFile" }, {
-  pattern = { "*.css", "*.sh", "*.html" },
+autocmd({ "FileType" }, {
+  pattern = { "css", "sh", "html" },
   command = "ColorizerAttachToBuffer",
 })
 
@@ -83,19 +111,14 @@ autocmd({ "VimLeave" }, {
   command = "!texclear %"
 })
 
-autocmd({ "BufRead", "BufNewFile" }, {
-  pattern = { "*md" },
+autocmd({ "FileType" }, {
+  pattern = { "markdown" },
   command = [[setlocal spell! spelllang=en]]
 })
 
-autocmd({ "VimLeave" }, {
-  pattern = { "*.tex" },
-  command = [[setlocal spell! spelllang=es]]
-})
-
 autocmd({ "FileType" }, {
-  pattern = { "*" },
-  command = [[setlocal formatoptions-=c formatoptions-=r formatoptions-=o]]
+  pattern = { "latex" },
+  command = [[setlocal spell! spelllang=es]]
 })
 
 autocmd({ "BufWritePost" }, {
@@ -106,4 +129,28 @@ autocmd({ "BufWritePost" }, {
 autocmd({ "BufWritePost" }, {
   pattern = { "*/dwm/config.h*" },
   command = [[!cd ~/.local/src/dwm; sudo make install]]
+})
+
+autocmd({ "FileType" }, {
+  pattern = {
+    "Jaq",
+    "qf",
+    "help",
+    "man",
+    "lspinfo",
+    "spectre_panel",
+    "lir",
+    "DressingSelect",
+    "tsplayground",
+    "lazy",
+    "mason",
+    "",
+  },
+  callback = function()
+    vim.cmd [[
+      nnoremap <silent> <buffer> q :close<CR>
+      nnoremap <silent> <buffer> <esc> :close<CR>
+      set nobuflisted
+    ]]
+  end,
 })
