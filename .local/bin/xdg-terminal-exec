@@ -1,3 +1,3 @@
 #!/bin/sh
 
-"$TERMINAL" -e "$@"
+"$TERMINAL" -n "floatterm" -e "$@"
