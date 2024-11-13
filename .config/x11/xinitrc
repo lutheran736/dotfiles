@@ -3,7 +3,7 @@
 setbg & # set the background with the `setbg` script
 xrdb -load ~/.config/x11/xresources &
 
-autostart="mpd xcompmgr dunst unclutter pipewire remaps batterynotify sleeping"
+autostart="mpd xcompmgr dunst unclutter pipewire remaps batterynotify"
 
 for program in $autostart; do
     pidof -sx "$program" || "$program" &
