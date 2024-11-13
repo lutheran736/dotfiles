@@ -1,16 +1,11 @@
 local map = vim.keymap.set
 
-function Sudo()
-  vim.cmd([[execute 'silent! write !sudo tee % >/dev/null']])
-end
-
 map("n", ";", ":", { desc = "CMD enter command mode" })
 map("i", "jk", "<ESC>")
-map("n", "<leader>c", "<cmd>!compiler '%:p'<CR>")
 map("n", "<leader>oe", "<cmd>setlocal spell! spelllang=en<CR>")
 map("n", "<leader>oa", "<cmd>setlocal spell! spelllang=es<CR>")
 map("n", "<leader>p", "<cmd>!opout '%:p'<CR>")
-map("n", "<leader>s", Sudo, {})
+map("n", "<leader>t", "<cmd>!xdg-terminal-exec<CR>")
 
 map("i", "<C-b>", "<ESC>^i", { desc = "move beginning of line" })
 map("i", "<C-e>", "<End>", { desc = "move end of line" })
@@ -32,21 +27,6 @@ map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "general copy whole file" })
 map("n", "<leader>fm", function()
   require("conform").format { lsp_fallback = true }
 end, { desc = "general format file" })
-
--- terminal
-map("t", "<C-x>", "<C-\\><C-N>", { desc = "terminal escape terminal mode" })
-
-map("n", "<leader>vf", function()
-  require("toggleterm").toggle_command("direction=float")
-end)
-
-map("n", "<leader>v", function()
-  require("toggleterm").toggle_command("direction=vertical")
-end)
-
-map("n", "<leader>h", function()
-  require("toggleterm").toggle_command("direction=horizontal")
-end)
 
 -- Gitsigns
 map("n", "<leader>gp", "<cmd>Gitsigns preview_hunk<cr>")
@@ -72,9 +52,6 @@ map("n", "<leader>e", "<cmd>NvimTreeFocus<CR>", { desc = "nvimtree focus window"
 
 -- ZenMode
 map("n", "<leader>zm", ":ZenMode<cr>")
-
--- markdown preview
-map("n", "<leader>mp", "<cmd>MarkdownPreviewToggle<cr>")
 
 -- telescope
 map("n", "<leader>fw", "<cmd>Telescope live_grep<CR>", { desc = "telescope live grep" })
