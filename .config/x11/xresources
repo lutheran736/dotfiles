@@ -142,7 +142,7 @@ st.borderpx: 20
 /* *.background:   #000000 */
 
 ! Dracula Xresources palette
-/* *.foreground: #F8F8F2
+/* *.foreground: #F8F8F2 */
 /* *.background: #282A36 */
 /* *.color0:     #000000 */
 /* *.color8:     #4D4D4D */

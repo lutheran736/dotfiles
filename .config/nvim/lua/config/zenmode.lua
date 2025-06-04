@@ -1,36 +1,26 @@
 local options = {
-window = {
-    backdrop = 0.95,
-    width = 100, -- width of the Zen window
-    height = 1, -- height of the Zen window
+  window = {
+    backdrop = 0.95,        -- Slightly dimmed backdrop
+    width = 100,            -- Fixed width (cells)
+    height = 1,             -- Full editor height
     options = {
-      colorcolumn = "",
-      signcolumn = "no", -- disable signcolumn
-      number = false, -- disable number column
-      relativenumber = false, -- disable relative numbers
-      -- cursorline = false, -- disable cursorline
-      -- cursorcolumn = false, -- disable cursor column
-      -- foldcolumn = "0", -- disable fold column
-      -- list = false, -- disable whitespace characters
+      signcolumn = "no",    -- Hide signs (Git/diagnostics)
+      number = false,       -- No line numbers
+      relativenumber = false,
+      cursorline = false,   -- Disable highlight
+      list = false,         -- Hide whitespace chars
+      foldcolumn = "0",     -- disable fold column
+      cursorcolumn = false, -- disable cursor column
     },
   },
   plugins = {
-    -- disable some global vim options (vim.o...)
     options = {
-      enabled = true,
-      ruler = false, -- disables the ruler text in the cmd line area
-      showcmd = false, -- disables the command in the last line of the screen
-      -- you may turn on/off statusline in zen mode by setting 'laststatus'
-      -- statusline will be shown only if 'laststatus' == 3
-      laststatus = 0, -- turn off the statusline in zen mode
+      ruler = false,                -- Disable cmdline ruler
+      showcmd = false,              -- Hide typed commands
+      laststatus = 0,               -- No statusline
     },
-    twilight = { enabled = false }, -- enable to start Twilight when zen mode opens
-    gitsigns = { enabled = false }, -- disables git signs
-    tmux = { enabled = true }, -- disables the tmux statusline
-    wezterm = {
-      enabled = true,
-      font = "+20", -- (10% increase per step)
-    },
+    gitsigns = { enabled = false }, -- Disable Git clutter
+    twilight = { enabled = false }, -- No Twilight integration
   },
 }
 

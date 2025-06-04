@@ -1,36 +1,26 @@
 local opt = vim.opt
 local o = vim.o
 local g = vim.g
-
 -------------------------------------- options ------------------------------------------
-o.termguicolors = true
-vim.cmd.colors("habamax")
-
-vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
-vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
-vim.api.nvim_set_hl(0, "NeoTreeNormal", { bg = "none" })
-vim.api.nvim_set_hl(0, "NeoTreeNormalNC", { bg = "none" })
-
+o.title = true
 o.laststatus = 3
 o.showmode = false
+opt.termguicolors = true
 
-o.clipboard = "unnamedplus"
+o.clipboard = 'unnamedplus'
 o.cursorline = true
 o.cursorlineopt = "number"
-
--- Number of screen lines to keep above and below the cursor
-o.scrolloff = 8
 
 -- Indenting
 o.expandtab = true
 o.shiftwidth = 2
 o.smartindent = true
-o.cindent = true
-o.autoindent = true
-o.wrap = true
-o.textwidth = 300
 o.tabstop = 2
 o.softtabstop = 2
+o.shiftround = true
+o.linebreak = true
+o.list = true
+opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
 opt.fillchars = { eob = " " }
 o.ignorecase = true
@@ -51,6 +41,20 @@ o.splitbelow = true
 o.splitright = true
 o.timeoutlen = 400
 o.undofile = true
+o.splitkeep = "screen"
+
+o.scrolloff = 8
+o.history = 100
+o.inccommand = 'split'
+
+-- Folding
+opt.foldlevel = 99
+opt.foldmethod = "expr"
+opt.foldexpr = "nvim_treesitter#foldexpr()" -- Utilize Treesitter folds
+
+-- Markdown
+o.conceallevel = 2
+o.concealcursor = "nc"
 
 -- interval for writing swap file to disk, also used by gitsigns
 o.updatetime = 250
@@ -66,6 +70,4 @@ g.loaded_perl_provider = 0
 g.loaded_ruby_provider = 0
 
 -- add binaries installed by mason.nvim to path
-local sep = "/"
-local delim = ":"
-vim.env.PATH = table.concat({ vim.fn.stdpath "data", "mason", "bin" }, sep) .. delim .. vim.env.PATH
+vim.env.PATH = table.concat({ vim.fn.stdpath "data", "mason", "bin" }, "/") .. ":" .. vim.env.PATH

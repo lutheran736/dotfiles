@@ -1,0 +1,7 @@
+# Ignore everything
+/*
+!.gitignore
+
+# Except for the files and folders we want to track
+!es.utf-8.add.spl
+!en.utf-8.add.spl

@@ -1,14 +1,26 @@
-# Basic vars
-set previewer '~/.config/lf/scripts/previewer'
-set preview true
-set cleaner '~/.config/lf/scripts/cleaner'
+# Core
 set shellopts '-eu'
 set ifs "\n"
-set scrolloff 10
-set icons
 set period 1
-set hiddenfiles ".*:*.aux:*.log:*.bbl:*.bcf:*.blg:*.run.xml"
-set autoquit true
+set autoquit
 set tabstop 4
-set ignorecase true
-set truncatechar ⋯
+
+# Display
+set icons
+set truncatechar "…"
+set hiddenfiles ".*:*.aux:*.log:*.bbl:*.bcf:*.blg:*.run.xml"
+set scrolloff 8
+
+# Preview
+set preview
+set previewer ~/.config/lf/scripts/previewer
+set sixel
+
+# Search behavior
+set ignorecase
+set incsearch
+
+# Interface options
+set mouse
+set errorfmt "\033[1;31m"
+# vim: ft=lf

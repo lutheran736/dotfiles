@@ -1,80 +1,85 @@
 #!/bin/sh
 
-# Function to show a preview of the file using ueberzug
 preview() {
-    cat <<-EOF | paste -sd '' >"$LF_UEBERZUG_TEMPDIR/fifo"
-	{
-	"action": "add", "identifier": "preview",
-	"path": "$1", "x": $4, "y": $5, "width": $2, "height": $3,
-	"scaler": "contain"
-	}
-	EOF
+  chafa "$1" -f sixel -s "$2x$3" --animate off
 }
 
 file="$1"
 shift
+: "${lf_user_preview_offset:=1}" # Initialize preview offset with default 1
+
+thumbnail="$LF_CHAFA_TEMPDIR/thumbnail.jpg"
+
 case "$(file --brief --dereference --mime-type -- "$file")" in
-*/zip | */jar | */war | */ear | */oxt | */vnd.android.package-archive)
-    unzip -l "$file"
-    ;;
 */*rar)
-    unrar l "$file"
-    ;;
-*/gz | */tar | */tgz | */tar.gz | */tar.bz2 | */tbz2 | */tar.txz | */txz | */7z | */lha | */alzip | */ace | */ar* | */rpm | */deb | */cab | */gz* | */bzip* | */compress | */lz* | */xz | */rzip | */lrzip | */7zip | */cpio)
-    atool --list -- "$file"
-    ;;
+  unrar l "$file" | tail -n "+$lf_user_preview_offset"
+  ;;
+*/zip | */jar | */war | */ear | */oxt | */gz | */tar | */tgz | */tar.gz | */tar.bz2 | */tbz2 | */tar.txz | */txz | */7z | */lha | */alzip | */ace | */ar* | */rpm | */deb | */cab | */gz* | */bzip* | */compress | */lz* | */xz | */rzip | */lrzip | */7zip | */cpio | */vnd.android.package-archive)
+  atool --list -- "$file" | tail -n "+$lf_user_preview_offset"
+  ;;
 */pdf)
-    thumbnail="$LF_UEBERZUG_TEMPDIR/thumbnail.png"
-    gs -o "$thumbnail" -sDEVICE=pngalpha -dLastPage=1 "$file" >/dev/null
-    preview "$thumbnail" "$@"
-    ;;
+  pdftoppm -jpeg -jpegopt quality=50,optimize=y -f "$lf_user_preview_offset" -singlefile "$file" "$thumbnail"
+  preview "$thumbnail.jpg" "$@"
+  ;;
 */epub+zip | */mobi*)
-    thumbnail="$LF_UEBERZUG_TEMPDIR/thumbnail.png"
-    gnome-epub-thumbnailer "$file" "$thumbnail"
-    preview "$thumbnail" "$@"
-    ;;
+  gnome-epub-thumbnailer -s 1024 "$file" "$thumbnail"
+  preview "$thumbnail" "$@"
+  ;;
+*/msword*)
+  catdoc "$file" | tail -n "+$lf_user_preview_offset"
+  ;;
+*officedocument*)
+  docx2txt "$file" | tail -n "+$lf_user_preview_offset"
+  ;;
+*opendocument*)
+  odt2txt "$file" | tail -n "+$lf_user_preview_offset"
+  ;;
 image/svg+xml)
-    thumbnail="$LF_UEBERZUG_TEMPDIR/thumbnail.png"
-    gm convert "$file" "$thumbnail"
-    preview "$thumbnail" "$@"
-    ;;
-
+  gm convert "$file" "$thumbnail"
+  preview "$thumbnail" "$@"
+  ;;
 image/x-xcf)
-    thumbnail="$LF_UEBERZUG_TEMPDIR/thumbnail.png"
-    magick "$file" "$thumbnail"
-    preview "$thumbnail" "$@"
-    ;;
-
+  magick "$file" "$thumbnail"
+  preview "$thumbnail" "$@"
+  ;;
 image/*)
-    preview "$file" "$@"
-    ;;
+  preview "$file" "$@"
+  ;;
 audio/*)
-    mediainfo "$file"
-    ;;
+  mediainfo "$file" | tail -n "+$lf_user_preview_offset"
+  ;;
 video/*)
-    thumbnail="$LF_UEBERZUG_TEMPDIR/thumbnail.png"
-    ffmpegthumbnailer -i "$file" -o "$thumbnail" -s 0 -q 5
-    preview "$thumbnail" "$@"
-    ;;
-*/pgp-encrypted | */octet-stream)
+  ffmpegthumbnailer -s 0 -q 5 -i "$file" -o "$thumbnail" -t "$lf_user_preview_offset"
+  preview "$thumbnail" "$@"
+  ;;
+*/pgp-encrypted)
+  gpg -d -- "$file" | tail -n "+$lf_user_preview_offset"
+  ;;
+text/html)
+  lynx -display_charset=utf-8 -dump "$file" | tail -n "+$lf_user_preview_offset"
+  ;;
+text/troff)
+  man ./ "$file" | col -b | tail -n "+$lf_user_preview_offset"
+  ;;
+text/* | */xml | */json | */x-ndjson | */x-subrip | */javascript | */mbox)
+  bat -p --theme ansi --terminal-width "$(($4-2))" -f "$file" | tail -n "+$lf_user_preview_offset"
+  ;;
+*iso*)
+  iso-info --no-header -l "$file" | tail -n "+$lf_user_preview_offset"
+  ;;
+*/torrent)
+  transmission-show "$file" | tail -n "+$lf_user_preview_offset"
+  ;;
+application/octet-stream)
+  case "${file##*.}" in
+  gpg)
     gpg -d -- "$file"
     ;;
-text/html)
-    lynx -display_charset=utf-8 -dump "$file"
-    ;;
-text/troff)
-    man ./ "$file" | col -b
-    ;;
-text/* | */xml | */json | */x-ndjson | */x-subrip | */javascript)
-    bat --color=always --style=plain --pager=never "$file"
-    ;;
-*opendocument*)
-    odt2txt "$file"
-    ;;
-*iso*)
-    iso-info --no-header -l "$file"
-    ;;
+  esac
+  ;;
+*)
+  file -ibL "$file"
+  ;;
 esac
 
-# Return a nonzero return code to force lf to reload the preview
 exit 127

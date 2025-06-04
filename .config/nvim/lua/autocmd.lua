@@ -1,6 +1,6 @@
 local autocmd = vim.api.nvim_create_autocmd
 
--- user event that loads after UIEnter + only if file buf is there
+-- File loading events
 autocmd({ "UIEnter", "BufReadPost", "BufNewFile" }, {
   group = vim.api.nvim_create_augroup("NvFilePost", { clear = true }),
   callback = function(args)
@@ -13,11 +13,10 @@ autocmd({ "UIEnter", "BufReadPost", "BufNewFile" }, {
 
     if file ~= "" and buftype ~= "nofile" and vim.g.ui_entered then
       vim.api.nvim_exec_autocmds("User", { pattern = "FilePost", modeline = false })
-      vim.api.nvim_del_augroup_by_name "NvFilePost"
+      vim.api.nvim_del_augroup_by_name("NvFilePost")
 
       vim.schedule(function()
         vim.api.nvim_exec_autocmds("FileType", {})
-
         if vim.g.editorconfig then
           require("editorconfig").config(args.buf)
         end
@@ -26,131 +25,148 @@ autocmd({ "UIEnter", "BufReadPost", "BufNewFile" }, {
   end,
 })
 
+-- UI Enhancements
 autocmd("TextYankPost", {
-  callback = function()
-    vim.highlight.on_yank({ higroup = "Visual", timeout = 120 })
+  pattern = "*",
+  callback = function() vim.hl.on_yank({ timeout = 300 }) end, -- Highlight yanked text
+})
+
+autocmd('BufRead', {
+  callback = function(opts)
+    vim.api.nvim_create_autocmd('BufWinEnter', {
+      once = true,
+      buffer = opts.buf,
+      callback = function()
+        local ft = vim.bo[opts.buf].filetype
+        local last_known_line = vim.api.nvim_buf_get_mark(opts.buf, '"')[1]
+        if
+            not (ft:match('commit') and ft:match('rebase'))
+            and last_known_line > 1
+            and last_known_line <= vim.api.nvim_buf_line_count(opts.buf)
+        then
+          vim.api.nvim_feedkeys([[g`"]], 'nx', false)
+        end
+      end,
+    })
   end,
 })
 
+-- Filetype detection
 autocmd({ "BufRead", "BufNewFile" }, {
   pattern = { "/tmp/calcurse*", "~/.calcurse/notes/*" },
-  command = "set filetype=markdown"
-})
-
--- Restore cursor position
-autocmd({ "BufReadPost" }, {
-  pattern = { "*" },
-  callback = function()
-    vim.cmd('silent! normal! g`"zv', false)
-  end,
-})
-
--- Restore cursor position
-autocmd({ "FileType" }, {
-  pattern = { "*" },
-  callback = function()
-    vim.cmd [[
-    map <leader>c :w! \| !compiler "%:p"<CR>
-    cabbrev w!! execute 'silent! write !sudo tee % >/dev/null' <bar> edit!
-    setlocal formatoptions-=c formatoptions-=r formatoptions-=o
-    ]]
-  end,
-})
-
-autocmd({ "BufEnter" }, {
-  pattern = "*",
-  callback = function()
-    vim.cmd [[
-      cnoreabbrev W! w!
-      cnoreabbrev Q! q!
-      cnoreabbrev Qall! qall!
-      cnoreabbrev Wq wq
-      cnoreabbrev Wa wa
-      cnoreabbrev wQ wq
-      cnoreabbrev WQ wq
-      cnoreabbrev W w
-      cnoreabbrev Q q
-      cnoreabbrev Qall qall
-  ]]
-  end
-})
-
-autocmd({ "BufWritePre" }, {
-  pattern = { "*" },
-  callback = function()
-    vim.cmd([[%s/\s\+$//e]])
-    vim.cmd([[%s/\n\+\%$//e]])
-  end,
-})
-
-autocmd({ "bufwritepre" }, {
-  pattern = { "*.[ch]" },
-  command = [[%s/\%$/\r/e]],
+  command = "setf markdown", -- Treat calcurse notes as markdown
 })
 
 autocmd({ "BufRead", "BufNewFile" }, {
-  pattern = { "Xresources,Xdefaults,xresources,xdefaults" },
+  pattern = { "Xresources", "Xdefaults" },
+  command = "setf xdefaults", -- Correct syntax for X configs
+})
+
+autocmd("BufWritePost", {
+  pattern = { "Xresources", "Xdefaults" },
+  callback = function() vim.fn.system("!xrdb %") end, -- Reload Xresources on save
+})
+
+autocmd("BufWritePost", {
+  pattern = { "bm-files", "bm-dirs" },
+  callback = function() vim.fn.system("!shortcuts") end, -- Reload Xresources on save
+})
+
+-- Buffer management
+autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("close_with_q", { clear = true }),
+  pattern = {
+    "PlenaryTestPopup", "checkhealth", "help", "lspinfo", "qf",
+    "startuptime", "man", "Jaq", "notify", "spectre_panel", "Lazy", "Mason"
+  },
+  callback = function(event) -- Close special buffers with 'q'
+    vim.bo[event.buf].buflisted = false
+    vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = event.buf, silent = true })
+  end,
+})
+
+-- Formatting
+autocmd("BufWritePre", {
+  pattern = "*",
   callback = function()
-    vim.cmd("set filetype=xdefaults")
-    vim.cmd("!xrdb %")
+    -- Save cursor position
+    local cursor_pos = vim.api.nvim_win_get_cursor(0)
+    -- Clean trailing whitespace
+    vim.cmd("%s/\\s\\+$//e")
+    -- Remove multiple EOF newlines
+    vim.cmd("%s/\\n\\+\\%$//e")
+    -- Ensure trailing newline for C files
+    if vim.fn.expand("%:e") == "c" or vim.fn.expand("%:e") == "h" then
+      vim.cmd("%s/\\%$/\\r/e")
+    end
+    -- Fix neomutt email signatures
+    if vim.fn.expand("%:p"):match("neomutt") then
+      vim.cmd("%s/^--$/-- /e")
+    end
+    -- Restore cursor position
+    vim.api.nvim_win_set_cursor(0, cursor_pos)
   end
 })
 
-autocmd({ "BufWritePost" }, {
-  pattern = { "bm-files", "bm-dirs" },
-  command = "!shortcuts",
+-- Filetype behaviors
+autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("wrap_spell", { clear = true }),
+  pattern = { "text", "markdown", "gitcommit" },
+  callback = function() -- Enable wrap and spell for text files
+    vim.opt_local.wrap = true
+    vim.opt_local.spell = true
+    vim.opt.spelllang = { "es", "en" }
+  end,
 })
 
-autocmd({ "FileType" }, {
-  pattern = { "css", "sh", "html" },
-  command = "ColorizerAttachToBuffer",
+autocmd("FileType", {
+  pattern = "*",
+  callback = function() -- Disable auto-comments
+    vim.opt_local.formatoptions:remove({ "c", "r", "o" })
+  end,
 })
 
-autocmd({ "VimLeave" }, {
-  pattern = { "*.tex" },
-  command = "!texclear %"
+-- Utilities
+autocmd("BufWritePre", {
+  group = vim.api.nvim_create_augroup("auto_create_dir", { clear = true }),
+  callback = function(event) -- CreatGGe missing directories
+    if not event.match:match("^%w%w+:[\\/][\\/]") then
+      local file = vim.uv.fs_realpath(event.match) or event.match
+      vim.fn.mkdir(vim.fn.fnamemodify(file, ":p:h"), "p")
+    end
+  end,
 })
 
-autocmd({ "FileType" }, {
-  pattern = { "markdown" },
-  command = [[setlocal spell! spelllang=en]]
+autocmd("FileType", {
+  pattern = { "css", "html", "sh" },
+  callback = function() vim.cmd.ColorizerAttachToBuffer() end, -- Enable colorizer
 })
 
-autocmd({ "FileType" }, {
-  pattern = { "latex" },
-  command = [[setlocal spell! spelllang=es]]
-})
-
-autocmd({ "BufWritePost" }, {
-  pattern = { "*/dwmblocks/config.h*" },
-  command = [[!cd ~/.local/src/dwmblocks; sudo make install && { killall -q dwmblocks;setsid -f dwmblocks}]]
-})
-
-autocmd({ "BufWritePost" }, {
-  pattern = { "*/dwm/config.h*" },
-  command = [[!cd ~/.local/src/dwm; sudo make install]]
-})
-
-autocmd({ "FileType" }, {
-  pattern = {
-    "Jaq",
-    "qf",
-    "help",
-    "man",
-    "lspinfo",
-    "spectre_panel",
-    "lir",
-    "DressingSelect",
-    "tsplayground",
-    "lazy",
-    "mason",
-    "",
-  },
+autocmd("BufWritePost", {
+  pattern = os.getenv("HOME") .. "/docs/*",
   callback = function()
-    vim.cmd [[
-      nnoremap <silent> <buffer> q :close<CR>
-      nnoremap <silent> <buffer> <esc> :close<CR>
-      set nobuflisted
-    ]]
+    vim.fn.system("git-sync")
+  end,
+})
+
+-- suckless program
+autocmd("BufWritePost", {
+  pattern = os.getenv("HOME") .. "/.local/src/dwmblocks/config.h",
+  callback = function()
+    vim.fn.system("cd ~/.local/src/dwmblocks/ && sudo make clean install && killall -q dwmblocks && setsid -f dwmblocks")
+  end,
+})
+
+autocmd("BufWritePost", {
+  pattern = os.getenv("HOME") .. "/.local/src/st/config.h",
+  callback = function()
+    vim.fn.system("cd ~/.local/src/st/ && sudo make clean install")
+  end,
+})
+
+autocmd("BufWritePost", {
+  pattern = os.getenv("HOME") .. "/.local/src/dwm/config.h",
+  callback = function()
+    vim.fn.system("cd ~/.local/src/dwm/ && sudo make clean install && sysact renew")
   end,
 })

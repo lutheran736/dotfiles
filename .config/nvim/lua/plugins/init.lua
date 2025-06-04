@@ -1,7 +1,22 @@
 return {
+
+  {
+    "RedsXDD/neopywal.nvim",
+    name = "neopywal",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      local neopywal = require("neopywal")
+      neopywal.setup({
+        transparent_background = true,
+      })
+      vim.cmd.colorscheme("neopywal")
+    end,
+  },
+
   {
     'nvim-lualine/lualine.nvim',
-    lazy = false,
+    event = "VeryLazy",
     config = function()
       require("config.lualine")
     end,
@@ -43,7 +58,10 @@ return {
   -- formatting!
   {
     "stevearc/conform.nvim",
-    opts = require "config.conform",
+    -- event = 'BufWritePre', -- uncomment for format on save
+    opts = function()
+      require "config.conform"
+    end,
   },
 
   -- git stuff
@@ -55,15 +73,11 @@ return {
     end,
   },
 
-  {
-    "tpope/vim-fugitive",
-    cmd = "Git"
-  },
-
   -- lsp stuff
   {
-    "williamboman/mason.nvim",
-    cmd = { "Mason", "MasonInstall", "MasonInstallAll", "MasonUpdate" },
+    "mason-org/mason.nvim",
+    cmd = { "Mason", "MasonInstall", "MasonUpdate" },
+    build = ":MasonUpdate",
     opts = function()
       return require "config.mason"
     end,
@@ -71,9 +85,9 @@ return {
 
   {
     "neovim/nvim-lspconfig",
-    event = "User FilePost",
+    event = { "User FilePost" },
     config = function()
-      require("config.lspconfig").defaults()
+      require("config.lspconfig")
     end,
   },
 
@@ -92,7 +106,6 @@ return {
           require "config.luasnip"
         end,
       },
-
       -- autopairing of (){}[] etc
       {
         "windwp/nvim-autopairs",
@@ -125,7 +138,10 @@ return {
 
   {
     "nvim-telescope/telescope.nvim",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    dependencies = {
+      { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+      { "2kabhishek/nerdy.nvim" },
+    },
     cmd = "Telescope",
     opts = function()
       return require "config.telescope"
@@ -146,13 +162,17 @@ return {
   },
 
   {
-    "vimwiki/vimwiki",
-    ft = "markdown",
-    cmd = { "VimwikiIndex" },
-    keys = { "<leader>ww", "<leader>wt" },
-    init = function ()
-      require("config.vimwiki")
-    end
+    'serenevoid/kiwi.nvim',
+    opts = {
+      {
+        name = "personal",
+        path = "docs/personal"
+      },
+    },
+    keys = {
+      { "<leader>ww", ":lua require(\"kiwi\").open_wiki_index()<cr>", desc = "Open Wiki index" },
+      { "T",          ":lua require(\"kiwi\").todo.toggle()<cr>",     desc = "Toggle Markdown Task" }
+    },
   },
 
   {
@@ -163,6 +183,24 @@ return {
   {
     "hiphish/rainbow-delimiters.nvim",
     event = "User FilePost"
+  },
+
+  {
+    "kylechui/nvim-surround",
+    event = "User FilePost",
+    config = function()
+      require("nvim-surround").setup()
+    end
+  },
+
+  {
+    "OXY2DEV/markview.nvim",
+    ft = { "markdown", "codecompanion" },
+    opts = {
+      preview = {
+        filetypes = { "md", "markdown", "codecompanion" },
+      },
+    },
   },
 
 }

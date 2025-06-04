@@ -24,8 +24,8 @@
 --embed-metadata # Embed metadata.
 
 # sponsorblock
---sponsorblock-remove "music_offtopic,sponsor,intro,outro,selfpromo,preview,filler,interaction"
---sponsorblock-mark "all" 
+# --sponsorblock-remove "music_offtopic,sponsor,intro,outro,selfpromo,preview,filler,interaction"
+# --sponsorblock-mark "all"
 
 # Make all connections via IPv4
 --force-ipv4

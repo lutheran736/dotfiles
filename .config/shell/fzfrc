@@ -1,0 +1,57 @@
+#!/usr/bin/env zsh
+
+  . ~/.cache/wal/fzf-cols
+  FZF_COLORS="--color=fg:${foreground},bg:-1,hl:${color10l},fg+:${foreground},bg+:-1,hl+:${color12}
+  --color=info:${color10},prompt:${color13},pointer:${color10},marker:${color12l},spinner:${color14},header:${color4}"
+
+# Layout and behavior options
+FZF_LAYOUT=(
+  --style=minimal
+  --layout=reverse
+  --height=40%
+)
+
+# Key bindings
+FZF_BINDS=(
+  --bind 'alt-d:half-page-down'
+  --bind 'alt-e:last'
+  --bind 'alt-n:page-down'
+  --bind 'alt-p:page-up'
+  --bind 'alt-u:half-page-up'
+  --bind 'alt-v:toggle-preview'
+  --bind 'backward-eof:ignore'
+  --bind 'ctrl-d:delete-char'
+  --bind 'alt-k:preview-up'
+  --bind 'alt-j:preview-down'
+  --bind 'ctrl-j:down'
+  --bind 'ctrl-k:up'
+  --bind 'change:first'
+)
+
+# Combine all options
+export FZF_DEFAULT_OPTS="${FZF_LAYOUT[@]} ${FZF_COLORS} ${FZF_BINDS[@]}"
+
+# Enhanced fd command configuration
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git --exclude node_modules --exclude target --strip-cwd-prefix'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git --exclude node_modules --exclude target'
+
+# Directory preview with tree and quick navigation
+export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
+
+# File preview with bat and quick actions
+export FZF_CTRL_T_OPTS="
+  --preview 'bat --style=numbers,changes --color=always --line-range :500 {}'
+  --bind 'ctrl-/:change-preview-window(down,50%,border-top|hidden|)'
+  --bind 'enter:execute(echo {+} | xargs -o nvim)+abort'
+  --bind 'ctrl-o:execute(xdg-open {} >/dev/null 2>&1)+abort'"
+
+# History search with xclip support
+export FZF_CTRL_R_OPTS="
+  --bind 'ctrl-y:execute-silent(echo -n {2..} | xclip -selection clipboard)+abort'
+  --bind 'ctrl-e:execute(echo {2..} | xclip -selection clipboard && echo {2..} | xargs -o zle redisplay)+abort'
+  --color header:italic
+  --header 'CTRL-Y: copy to clipboard | CTRL-E: copy and display'"
+
+# Tmux integration
+export FZF_TMUX=1

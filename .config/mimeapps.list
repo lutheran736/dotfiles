@@ -1,11 +1,13 @@
 [Default Applications]
-text/x-shellscript=text.desktop;
 x-scheme-handler/magnet=torrent.desktop;
 application/x-bittorrent=torrent.desktop;
 x-scheme-handler/mailto=mail.desktop;
 text/plain=text.desktop;
+text/x-shellscript=text.desktop;
 application/postscript=pdf.desktop;
 application/pdf=pdf.desktop;
+application/epub+zip=pdf.desktop;
+application/mobi=pdf.desktop;
 image/png=img.desktop;
 image/jpeg=img.desktop;
 image/gif=img.desktop;
@@ -14,6 +16,19 @@ video/x-matroska=video.desktop
 video/mp4=video.desktop
 x-scheme-handler/lbry=lbry.desktop
 inode/directory=file.desktop
+x-scheme-handler/tonsite=org.telegram.desktop._89c71ad553bbad19b2c5f72bc815cc0f.desktop
+x-scheme-handler/http=librewolf.desktop
+x-scheme-handler/https=librewolf.desktop
+x-scheme-handler/chrome=librewolf.desktop
+text/html=librewolf.desktop
+application/x-extension-htm=librewolf.desktop
+application/x-extension-html=librewolf.desktop
+application/x-extension-shtml=librewolf.desktop
+application/xhtml+xml=librewolf.desktop
+application/x-extension-xhtml=librewolf.desktop
+application/x-extension-xht=librewolf.desktop
+
+[Added Associations]
 x-scheme-handler/http=librewolf.desktop;
 x-scheme-handler/https=librewolf.desktop;
 x-scheme-handler/chrome=librewolf.desktop;
@@ -24,3 +39,4 @@ application/x-extension-shtml=librewolf.desktop;
 application/xhtml+xml=librewolf.desktop;
 application/x-extension-xhtml=librewolf.desktop;
 application/x-extension-xht=librewolf.desktop;
+x-scheme-handler/tonsite=org.telegram.desktop._89c71ad553bbad19b2c5f72bc815cc0f.desktop;

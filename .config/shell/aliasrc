@@ -1,184 +1,143 @@
-#!/bin/sh
+#!/usr/bin/env zsh
 
-# Use neovim for vim if present.
-[ -x "$(command -v nvim)" ] && alias vim="nvim" vimdiff="nvim -d"
+# --- Core Utilities ---
+() {
+  # Neovim as default editor
+  (( ${+commands[nvim]} )) && {
+    alias  vim='nvim'
+    alias  vimdiff='nvim -d'
+  }
 
-# Use $XINITRC variable if file exists.
-[ -f "$XINITRC" ] && alias startx="startx $XINITRC"
-[ -f "$MBSYNCRC" ] && alias mbsync="mbsync -c $MBSYNCRC"
+  # XDG-aware application aliases
+  [[ -v XINITRC && -f $XINITRC ]] && alias startx="startx $XINITRC"
+  [[ -f ${MBSYNCRC:-$HOME/.mbsyncrc} ]] && alias mbsync="mbsync -c ${MBSYNCRC:-$HOME/.mbsyncrc}"
+}
 
-# sudo not required for some system commands
-for command in mount umount sv pacman updatedb su shutdown poweroff reboot; do
-    alias $command="sudo $command"
-done
-unset command
+# --- Sudo Shortcuts ---
+() {
+  local -a sudo_commands=(mount umount sv pacman updatedb su shutdown poweroff reboot zzz)
+  for cmd in $sudo_commands; do
+    (( ${+commands[$cmd]} )) && alias $cmd="sudo $cmd"
+  done
+}
 
+# --- File Operations ---
 se() {
-    choice="$(find ~/.local/bin -mindepth 1 -printf '%P\n' | fzf)"
-    [ -f "$HOME/.local/bin/$choice" ] && $EDITOR "$HOME/.local/bin/$choice"
+  local choice
+  choice=$(find ~/.local/bin -mindepth 1 -printf '%P\n' | fzf --height 40% --reverse)
+  [[ -n $choice ]] && $EDITOR "$HOME/.local/bin/$choice"
 }
 
-# Function extract for common file formats
-SAVEIFS=$IFS
-IFS=$(echo -en "\n\b")
-
-ex() {
-    if [ -z "$1" ]; then
-        # display usage if no parameters given
-        echo "Usage: extract <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz>"
-        echo "       extract <path/file_name_1.ext> [path/file_name_2.ext] [path/file_name_3.ext]"
-    else
-        for n in "$@"; do
-            if [ -f "$n" ]; then
-                case "${n%,}" in
-                *.cbt | *.tar.bz2 | *.tar.gz | *.tar.xz | *.tbz2 | *.tgz | *.txz | *.tar)
-                    tar xvf "$n"
-                    ;;
-                *.lzma) unlzma ./"$n" ;;
-                *.bz2) bunzip2 ./"$n" ;;
-                *.cbr | *.rar) unrar x -ad ./"$n" ;;
-                *.gz) gunzip ./"$n" ;;
-                *.cbz | *.epub | *.zip) unzip ./"$n" ;;
-                *.z) uncompress ./"$n" ;;
-                *.7z | *.arj | *.cab | *.cb7 | *.chm | *.deb | *.dmg | *.iso | *.lzh | *.msi | *.pkg | *.rpm | *.udf | *.wim | *.xar)
-                    7z x ./"$n"
-                    ;;
-                *.xz) unxz ./"$n" ;;
-                *.exe) cabextract ./"$n" ;;
-                *.cpio) cpio -id <./"$n" ;;
-                *.cba | *.ace) unace x ./"$n" ;;
-                *)
-                    echo "extract: '$n' - unknown archive method"
-                    return 1
-                    ;;
-                esac
-            else
-                echo "'$n' - file does not exist"
-                return 1
-            fi
-        done
-    fi
-}
-
-IFS=$SAVEIFS
-
-nickrandom(){
-  nick=$(shuf -n 1 /usr/share/dict/words | tr -d "'")
-  echo "$nick" | xclip -sel clip
+# --- Random Generators ---
+nickrandom() {
+  local nick=$(grep -E '^[A-Z][a-z]+(d|n|r|t|s)$' /usr/share/dict/words |shuf -n 1 )
+  printf "%s" "$nick" | xclip -sel clip
   echo "Nick: $nick"
 }
 
-pw(){
-passw=$(cat < /dev/urandom | tr -dc 'a-zA-Z0-9-!@#$%^&*()_+~' | fold -w 30 | head -n 1)
-echo "$passw" | xclip -sel clip
-echo "Password: $passw"
+pw() {
+  local passw=$(LC_ALL=C tr -dc 'A-Za-z0-9!@#$%^&*()_+~' < /dev/urandom | head -c 30)
+  printf "%s" "$passw" | xclip -sel clip
+  echo "Password: $passw"
 }
 
-mkdd(){
-    mkdir "$*-$(date '+%4Y-%d-%m')"
+# --- Network ---
+wg-add() {
+  (( ${+commands[nmcli]} )) && nmcli connection import type wireguard file "$@"
 }
 
-# navigation
-alias \
-    ..='cd ..' \
-    ...='cd ../..' \
-    .3='cd ../../..' \
-    .4='cd ../../../..' \
-    .5='cd ../../../../..'
+# --- Navigation ---
+alias ..='cd ..'
+alias ...='cd ../..'
+alias .3='cd ../../..'
+alias .4='cd ../../../..'
+alias .5='cd ../../../../..'
 
-# pacman
-alias \
-    pacsyu='sudo pacman -Syu' \
-    pacsyyu='sudo pacman -Syyu' \
-    pacscc='sudo pacman -Scc' \
-    unlock='sudo rm /var/lib/pacman/db.lck' \
-    cleanup='sudo pacman -Rns $(pacman -Qtdq)' \
-    list="sudo pacman -Qqe" \
-    listt="sudo pacman -Qqet" \
-    listaur="sudo pacman -Qqem"
-# ps
-alias \
-    psa="ps auxf" \
-    psgrep="ps aux | grep -v grep | grep -i -e VSZ -e" \
-    psmem='ps auxf | sort -nr -k 4' \
-    psmem10='ps auxf | sort -nr -k 4 | head -10' \
-    pscpu='ps auxf | sort -nr -k 3' \
-    pscpu10='ps auxf | sort -nr -k 3 | head -10'
+# --- Package Management ---
+alias pacsyu='sudo pacman -Syu'
+alias pacsyyu='sudo pacman -Syyu'
+alias pacscc='sudo pacman -Scc'
+alias unlock='sudo rm /var/lib/pacman/db.lck'
+alias cleanup='sudo pacman -Rns $(pacman -Qtdq)'
+alias list="pacman -Qqe"
+alias listt="pacman -Qqet"
+alias listaur="pacman -Qqem"
 
-# Verbosity and settings that you pretty much just always are going to want.
-alias \
-    cp="cp -iv" \
-    mv="mv -iv" \
-    rm="rm -Iv" \
-    bc="bc -ql" \
-    rsync="rsync -vrPlu" \
-    mkd="mkdir -pv" \
-    yt="yt-dlp --embed-metadata -i" \
-    yta="yt -x -f bestaudio/best" \
-    yta-m4a="yt -x -f 'bestaudio[ext=m4a]' --audio-quality 0" \
-    ytt="yt --skip-download --write-thumbnail" \
-    ffmpeg="ffmpeg -hide_banner"
+# --- Process Management ---
+alias psa="ps auxf"
+alias psgrep="ps aux | grep -v grep | grep -i -e VSZ -e"
+alias psmem='ps auxf | sort -nr -k 4'
+alias psmem10='ps auxf | sort -nr -k 4 | head -10'
+alias pscpu='ps auxf | sort -nr -k 3'
+alias pscpu10='ps auxf | sort -nr -k 3 | head -10'
 
-# Colorize commands when possible.
-alias \
-    ls="ls -hN --color=auto --group-directories-first" \
-    grep="grep --color=auto" \
-    diff="diff --color=auto" \
-    dir="dir --color=auto" \
-    vdir="vdir --color=auto" \
-    grep="grep --color=auto" \
-    fgrep="fgrep --color=auto" \
-    egrep="egrep --color=auto" \
-    ip="ip -color=auto" \
-    ll="ls -alFh" \
-    la="ls -a" \
-    l="ls -CF" \
-    l.="ls -A | grep -E '^\.'" \
-    lla="ls -Alh"
+# --- Verbose Operations ---
+alias cp='cp -iv'
+alias mv='mv -iv'
+alias rm='rm -Iv'
+alias mkd='mkdir -pv'
+alias ffmpeg='ffmpeg -hide_banner'
+alias ffprobe='ffprobe -hide_banner'
+alias lsb='lsblk -o NAME,FSTYPE,SIZE,FSUSED,MOUNTPOINTS,UUID'
 
-#youtube download
-alias \
-    yta-aac="yt-dlp -x --audio-format aac " \
-    yta-best="yt-dlp -x --audio-format best " \
-    yta-flac="yt-dlp -x --audio-format flac " \
-    yta-mp3="yt-dlp -x --audio-format mp3 --audio-quality 0" \
+# --- Colorized Output ---
+alias ls='ls -hN --color=auto --group-directories-first'
+alias grep='grep --color=auto'
+alias diff='diff --color=auto'
+alias ip='ip -color=auto'
+alias ll='ls -alFh'
+alias la='ls -A'
+alias l='ls -CF'
+alias l.='ls -d .*'
+alias ccat='highlight --out-format=ansi'
 
-# termbin
-alias \
-    tb="nc termbin.com 9999" \
-    tbc="nc termbin.com 9999 | xclip -selection c"
+# --- YouTube Download ---
+alias yt='yt-dlp --embed-metadata -i'
+alias yta='yt -x -f bestaudio/best'
+alias ytt='yt --skip-download --write-thumbnail'
+alias yta-flac='yt -x --audio-format flac'
+alias yta-mp3='yt -x --audio-format mp3'
+alias yta-aac='yt -x --audio-format aac'
+alias yta-best='yt -x --audio-format best'
+alias yta-m4a='yt -x -f "ba[ext=m4a]"'
 
-# These common commands are just too long! Abbreviate them.
-alias \
-    ka="killall" \
-    g="git" \
-    sdn="shutdown -h now" \
-    e="$EDITOR" \
-    v="$EDITOR" \
-    p="pacman" \
-    z="zathura" \
-    hsg="history |  grep" \
-    wget="wget -c" \
-    config="/usr/bin/git --git-dir=$HOME/.dotfiles --work-tree=$HOME" \
-    fix-permissions="sudo chown -R $USER:$USER ~/.config ~/.local" \
-    rr='curl -s -L https://raw.githubusercontent.com/keroserene/rickrollrc/master/roll.sh | sh' \
-    merge='xrdb -merge ~/.config/x11/xresources' \
-    irssi="irssi --config=$XDG_CONFIG_HOME/irssi/config --home=$XDG_DATA_HOME/irssi" \
-    irssitor="proxychains irssi --config=$XDG_CONFIG_HOME/irssi/config --home=$XDG_DATA_HOME/irssi" \
-    update-grub="sudo grub-mkconfig -o /boot/grub/grub.cfg" \
-    update-fc="sudo fc-cache -fv" \
-    findme="curl geofind.me" \
-    xclip="xclip -selectio c" \
-    findme2="curl https://am.i.mullvad.net/json" \
-    curse='CALCURSE_CALDAV_PASSWORD=$(pass caldav/sweetmask20) calcurse-caldav' \
-    history="history 0" \
-    rip="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -200 | nl" \
-    riplong="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -3000 | nl" \
-    tta="shuf -n 40 /usr/share/dict/words|tt -notheme"
+# --- System Info ---
+alias rip="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort -h | tail -200 | nl"
+alias riplong="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort -h | tail -3000 | nl"
 
+# --- Git ---
+alias g='git'
+alias config='/usr/bin/git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+alias gs='git status'
+alias ga='git add .'
+alias gc='git commit -m'
+alias gagc='git add . && git commit -m'
+alias gp='git fetch -p'
+alias gcom='git checkout main'
+alias gcol='git checkout -'
+alias gb='git checkout -b'
+alias gbl='git branch -a'
+alias grv='git remote -v'
+alias grb='npx git-removed-branches'
+alias gcl='git clone'
+alias gbr='git browse'
+alias pp='git pull --rebase && git push'
 
-
-alias \
-    lf="lfub" \
-    magit="nvim -c MagitOnly" \
-    ref="shortcuts >/dev/null; source ${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc ; source ${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutenvrc ; source ${XDG_CONFIG_HOME:-$HOME/.config}/shell/zshnameddirrc"
+# --- Misc Utilities ---
+alias lf='lfub'
+alias tb='nc termbin.com 9999'
+alias tbc='nc termbin.com 9999 | xclip -selection clipboard'
+alias e='exit'
+alias ka='killall'
+alias v='$EDITOR'
+alias z='zathura'
+alias wget='wget -c'
+alias cupsd='sudo cupsd -f'
+alias merge='xrdb -merge ~/.config/x11/xresources'
+alias update-grub='sudo grub-mkconfig -o /boot/grub/grub.cfg'
+alias update-fc="sudo fc-cache -fv"
+alias irssi='irssi --config=$XDG_CONFIG_HOME/irssi/config --home=$XDG_DATA_HOME/irssi'
+alias findme='curl https://am.i.mullvad.net/json'
+alias xclip='xclip -selection clipboard'
+alias tt='tt -notheme -noskip -blockcursor -nohighlight'
+alias ref='shortcuts >/dev/null; source ${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc ; source ${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutenvrc ; source ${XDG_CONFIG_HOME:-$HOME/.config}/shell/zshnameddirrc'

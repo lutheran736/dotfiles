@@ -1,6 +1,8 @@
 return {
   defaults = { lazy = true },
-  install = { colorscheme = { "onedark" } },
+  install = { colorscheme = { "auto" } },
+  change_detection = { notify = false },
+
 
   ui = {
     icons = {

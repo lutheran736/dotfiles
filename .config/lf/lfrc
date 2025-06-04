@@ -1,5 +1,7 @@
 #Load sub-config files
 source "~/.config/lf/settings"
+source "~/.config/lf/opener"
 source "~/.config/lf/commands"
 source "~/.config/lf/mappings"
 source "~/.config/lf/shortcutrc"
+# vim: ft=lf

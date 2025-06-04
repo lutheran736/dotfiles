@@ -1,0 +1,68 @@
+# cmds/functions
+cmd open ${{
+    case $(file --mime-type "$(readlink -f "$f")" -b) in
+        # Text/editables
+        text/*|application/json|inode/x-empty|application/x-subrip|application/javascript|application/x-ndjson|application/mbox)
+            $EDITOR "$fx"
+            ;;
+
+        # Office docs
+        application/vnd.openxmlformats-officedocument.*|application/vnd.oasis.opendocument.*|application/vnd.ms-powerpoint)
+            setsid -f libreoffice "$fx" >/dev/null 2>&1
+            ;;
+
+        # PDF/eBooks
+        application/pdf|image/vnd.djvu|application/epub*|application/postscript|application/vnd.rar)
+            setsid -f zathura "$fx" >/dev/null 2>&1
+            ;;
+
+        # Images
+        image/x-xcf)
+            setsid -f gimp "$f" >/dev/null 2>&1
+            ;;
+        image/svg+xml)
+            display -- "$f"
+            ;;
+        image/*)
+            rotdir "$f" | grep -i "\.\(png\|jpg\|jpeg\|gif\|webp\|avif\|tif\|ico\)\(_large\)*$" |
+            setsid -f nsxiv -aio 2>/dev/null | while read -r file; do
+                [ -z "$file" ] && continue
+                lf -remote "send select \"$file\""
+                lf -remote "send toggle"
+            done &
+            ;;
+
+        # Audio/Video
+        audio/*|video/x-ms-asf)
+            mpv --audio-display=no "$f"
+            ;;
+        video/*)
+            setsid -f mpv "$f" -quiet >/dev/null 2>&1
+            ;;
+
+        # Archives
+        application/zip*|application/7z*|application/tar|application/gtar|application/bzip*|application/lz*|application/xz|application/compress|application/rar|application/rpm|application/deb)
+            mntdir="$f-archivemount"
+            [ -d "$mntdir" ] || { mkdir -p "$mntdir" && archivemount "$f" "$mntdir" && echo "$mntdir" >> "/tmp/__lf_archivemount_$id"; }
+            lf -remote "send $id cd '$mntdir'"
+            lf -remote "send $id reload"
+            ;;
+
+        # Specific binaries
+        application/octet-stream)
+            case ${f##*.} in
+                doc|docx|xls|xlsx|odt|ppt|pptx) setsid -f libreoffice "$fx" >/dev/null 2>&1 ;;
+                ghw) setsid -f gtkwave "$f" >/dev/null 2>&1 ;;
+                ts|cpp|pgp) $EDITOR "$f" ;;
+            esac
+            ;;
+
+        # Default
+        *)
+            for f in $fx; do
+                setsid -f "$OPENER" "$f" >/dev/null 2>&1
+            done
+            ;;
+    esac
+}}
+# vim: ft=lf

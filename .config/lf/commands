@@ -1,106 +1,134 @@
-# cmds/functions
-cmd open ${{
-    case $(file --mime-type "$(readlink -f $f)" -b) in
-	application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) localc $fx ;;
-	image/vnd.djvu|application/pdf|application/postscript) setsid -f zathura $fx >/dev/null 2>&1 ;;
-        text/*|application/json|inode/x-empty|application/x-subrip|application/javascript) $EDITOR $fx;;
-	image/x-xcf) setsid -f gimp $f >/dev/null 2>&1 ;;
-	image/svg+xml) display -- $f ;;
-	image/*) rotdir $f | grep -i "\.\(png\|jpg\|jpeg\|gif\|webp\|avif\|tif\|ico\)\(_large\)*$" |
-		setsid -f nsxiv -aio 2>/dev/null | while read -r file; do
-			[ -z "$file" ] && continue
-			lf -remote "send select \"$file\""
-			lf -remote "send toggle"
-		done &
-		;;
-	audio/*|video/x-ms-asf) mpv --audio-display=no $f ;;
-	video/*) setsid -f mpv $f -quiet >/dev/null 2>&1 ;;
-	application/pdf|application/vnd.djvu|application/epub*) setsid -f zathura $fx >/dev/null 2>&1 ;;
-	application/pgp-encrypted) $EDITOR $fx ;;
-	application/vnd.openxmlformats-officedocument.wordprocessingml.document|application/vnd.oasis.opendocument.text|application/vnd.openxmlformats-officedocument.spreadsheetml.sheet|application/vnd.oasis.opendocument.spreadsheet|application/vnd.oasis.opendocument.spreadsheet-template|application/vnd.openxmlformats-officedocument.presentationml.presentation|application/vnd.oasis.opendocument.presentation-template|application/vnd.oasis.opendocument.presentation|application/vnd.ms-powerpoint|application/vnd.oasis.opendocument.graphics|application/vnd.oasis.opendocument.graphics-template|application/vnd.oasis.opendocument.formula|application/vnd.oasis.opendocument.database) setsid -f libreoffice $fx >/dev/null 2>&1 ;;
-        application/octet-stream) case ${f##*.} in
-			doc|docx|xls|xlsx|odt|ppt|pptx) setsid -f libreoffice $fx >/dev/null 2>&1 ;;
-			ghw) setsid -f gtkwave $f >/dev/null 2>&1 ;;
-			ts) setsid -f mpv $f -quiet >/dev/null 2>&1 ;;
-			*) setsid -f zathura $fx >/dev/null 2>&1 ;;
-	   	esac ;;
-	*) for f in $fx; do setsid -f $OPENER $f >/dev/null 2>&1; done;;
+# File creation command
+cmd mk ${{
+    clear
+    tput cup $(( $(tput lines) / 3 ))
+    tput bold
+    printf "Create new (name or path/): "
+    read -r name
+    name=${name#"${name%%[![:space:]]*}"}
+    name=${name%"${name##*[![:space:]]}"}
+    [ -z "$name" ] && echo "Canceled" && return 1
+
+    if [[ "$name" == */* ]]; then
+        mkdir -p -- "${name%/}"
+    elif [[ "$name" == */ ]]; then
+        mkdir -p -- "$name"
+    else
+        touch -- "$name"
+    fi
+    lf -remote "send $id select \"$name\""
+}}
+
+# Archive extraction with confirmation
+cmd extract ${{
+    clear
+    tput cup $(($(tput lines)/3))
+    tput bold
+    set -f
+
+    printf "%s\n\t" "$fx"
+    printf "extract?[y/N] "
+    read ans
+
+    [ "$ans" != "y" ] && return 1
+
+    case $(file --mime-type "$(readlink -f "$f")" -b) in
+        application/cbt|application/tar|application/gtar|application/tar+bz2|application/tar+gz|application/tar+xz)
+            tar xvf "$fx"
+            ;;
+
+        application/lzma)
+            unlzma "$fx"
+            ;;
+
+        application/bzip2)
+            bunzip2 "$fx"
+            ;;
+
+        application/vnd.rar)
+            unrar x -ad "$fx"
+            ;;
+
+        application/gzip)
+            gunzip "$fx"
+            ;;
+
+        application/zip|application/cbz|application/epub+zip)
+            unzip "$fx"
+            ;;
+
+        application/x-compress)
+            uncompress "$fx"
+            ;;
+
+        application/7z-compressed|application/arj|application/vnd.ms-cab-compressed|application/cb7|application/vnd.ms-htmlhelp|application/debian-package|application/apple-diskimage|application/iso9660-image|application/lzh-compressed|application/msi|application/apple-diskimage|application/redhat-package-manager|application/udf|application/ms-wim|application/xar)
+            7z x "$fx"
+            ;;
+
+        application/xz)
+            unxz "$fx"
+            ;;
+
+        application/vnd.microsoft.portable-executable)
+            cabextract "$fx"
+            ;;
+
+        application/cpio)
+            cpio -id < "$fx"
+            ;;
+
+        application/ace-compressed)
+            unace x "$fx"
+            ;;
+
+        *)
+            echo "Format not supported: $fx"
+            ;;
     esac
 }}
 
-cmd mkdir $mkdir -p "$@"
-cmd touch $touch "$@"
-
-cmd extract ${{
-	clear; tput cup $(($(tput lines)/3)); tput bold
-	set -f
-	printf "%s\n\t" "$fx"
-	printf "extract?[y/N]"
-	read ans
-	[ $ans = "y" ] && {
-		case $fx in
-			*.tar.bz2)   tar xjf $fx     ;;
-			*.tar.gz)    tar xzf $fx     ;;
-			*.bz2)       bunzip2 $fx     ;;
-			*.rar)       unrar e $fx     ;;
-			*.gz)        gunzip $fx      ;;
-			*.tar)       tar xf $fx      ;;
-			*.tbz2)      tar xjf $fx     ;;
-			*.tgz)       tar xzf $fx     ;;
-			*.zip)       unzip $fx       ;;
-			*.Z)         uncompress $fx  ;;
-			*.7z)        7z x $fx        ;;
-			*.tar.xz)    tar xf $fx      ;;
-		esac
-	}
-}}
-
-cmd delete ${{
-	clear; tput cup $(($(tput lines)/3)); tput bold
-	set -f
-	printf "%s\n\t" "$fx"
-	printf "delete?[y/N]"
-	read ans
-	[ $ans = "y" ] && rm -rf -- $fx
-}}
-
+# Move files to directory selected via fzf from bookmarks
 cmd moveto ${{
-	set -f
-	dest=$(sed -e 's/\s*#.*//' -e '/^$/d' -e 's/^\S*\s*//' "${XDG_CONFIG_HOME:-$HOME/.config}/shell/bm-dirs" | fzf --prompt 'Move to where? ' | sed 's|~|$HOME|')
-	[ -z "$dest" ] && exit
-	destpath=$(eval printf '%s' \"$dest\")
-	clear; tput cup $(($(tput lines)/3)); tput bold
-	echo "From:"
-	echo "$fx" | sed 's/^/   /'
-	printf "To:\n   %s\n\n\tmove?[y/N]" "$destpath"
-	read -r ans
-	[ "$ans" != "y" ] && exit
-	for x in $fx; do
-		mv -iv "$x" "$destpath"
-	done &&
-	notify-send "🚚 File(s) moved." "File(s) moved to $destpath."
+    set -f
+    clear; tput cup $(($(tput lines)/3))
+    dest=$(sed -e 's/\s*#.*//' -e '/^$/d' -e 's/^\S*\s*//' "${XDG_CONFIG_HOME:-$HOME/.config}/shell/bm-dirs" | fzf --layout=reverse --height 40% --prompt 'Move to where? ' | sed 's|~|$HOME|')
+    [ -z "$dest" ] && exit
+    destpath=$(eval printf '%s' \"$dest\")
+    clear; tput cup $(($(tput lines)/3)); tput bold
+    echo "From:"
+    echo "$fx" | sed 's/^/   /'
+    printf "To:\n   %s\n\n\tmove?[y/N]" "$destpath"
+    read -r ans
+    [ "$ans" != "y" ] && exit
+    for x in $fx; do
+        mv -iv "$x" "$destpath"
+    done &&
+    notify-send "󰪹 File(s) moved." "File(s) moved to $destpath."
 }}
 
+# Copy files to directory selected via fzf from bookmarks
 cmd copyto ${{
-	set -f
-	dest=$(sed -e 's/\s*#.*//' -e '/^$/d' -e 's/^\S*\s*//' "${XDG_CONFIG_HOME:-$HOME/.config}/shell/bm-dirs" | fzf --prompt 'Copy to where? ' | sed 's|~|$HOME|')
-	[ -z "$dest" ] && exit
-	destpath=$(eval printf '%s' \"$dest\")
-	clear; tput cup $(($(tput lines)/3)); tput bold
-	echo "From:"
-	echo "$fx" | sed 's/^/   /'
-	printf "To:\n   %s\n\n\tcopy?[y/N]" "$destpath"
-	read -r ans
-	[ "$ans" != "y" ] && exit
-	for x in $fx; do
-		cp -ivr "$x" "$destpath"
-	done &&
-	notify-send "📋 File(s) copied." "File(s) copied to $destpath."
+    set -f
+    clear; tput cup $(($(tput lines)/3))
+    dest=$(sed -e 's/\s*#.*//' -e '/^$/d' -e 's/^\S*\s*//' "${XDG_CONFIG_HOME:-$HOME/.config}/shell/bm-dirs" | fzf --layout=reverse --height 40% --prompt 'Copy to where? ' | sed 's|~|$HOME|')
+    [ -z "$dest" ] && exit
+    destpath=$(eval printf '%s' \"$dest\")
+    clear; tput cup $(($(tput lines)/3)); tput bold
+    echo "From:"
+    echo "$fx" | sed 's/^/   /'
+    printf "To:\n   %s\n\n\tcopy?[y/N]" "$destpath"
+    read -r ans
+    [ "$ans" != "y" ] && exit
+    for x in $fx; do
+        cp -ivr "$x" "$destpath"
+    done &&
+    notify-send "󱀃 File(s) copied." "File(s) copied to $destpath."
 }}
 
-
+# Set background (parameter needed)
 cmd setbg "$1"
 
+# Bulk rename files using temp files and editor
 cmd bulkrename ${{
     tmpfile_old="$(mktemp)"
     tmpfile_new="$(mktemp)"
@@ -122,17 +150,27 @@ cmd bulkrename ${{
     lf -remote "send $id unselect"
 }}
 
-cmd trash &{{
-  files=$(printf "$fx" | tr '\n' ';')
-  while [ "$files" ]; do
-    # extract the substring from start of string up to delimiter.
-    # this is the first "element" of the string.
-    file=${files%%;*}
+cmd trash ${{
+    clear; tput cup $(($(tput lines)/3)); tput bold
+    set -f
+    printf "%s\n\t" "$fx"
+    printf "move $(echo "$fx" | wc -l) file(s) to trash? [y/n]"
+    read confirm
 
-    trash-put -- "$(basename "$file")"
-    # if there's only one element left, set `files` to an empty string.
-    # this causes us to exit this `while` loop.
-    # else, we delete the first "element" of the string from files, and move onto the next.
+    files=$(printf "$fx" | tr '\n' ';')
+    files=$(echo "$files" | sed 's/[[:space:]]\+/ /g')
+    files=$(echo "$files" | sed 's/^ *//;s/ *$//')
+
+  if [ "$confirm" != "y" ]; then
+    echo "Operation canceled."
+    exit 1
+  fi
+
+  while [ "$files" ]; do
+    file=${files%%;*}
+    trash-put "$(basename "$file")"
+    lf --remote "send $id unselect $file"
+
     if [ "$files" = "$file" ]; then
       files=''
     else
@@ -141,27 +179,72 @@ cmd trash &{{
   done
 }}
 
+# Restore from trash
 cmd trash_restore ${{
-  file="$(trash-list | grep "$(pwd)" | fzf | awk '{$1=$2=""; print substr($0,3)}')"
-  [ -n "$file" ] && yes 0 | trash-restore "$file"
+    file=$(trash-list | grep "$PWD" | awk '{$1=$2=""; print substr($0,3)}' | fzf --layout=reverse --height 40% --prompt 'Restore file?: ')
+    [ -n $file ] && echo 0 | trash-restore "$file" >/dev/null  && lf -remote "send $id select \"$file\""
 }}
 
+# Empty trash
 cmd clear_trash ${{
-  clear
-	clear; tput cup $(($(tput lines)/3)); tput bold
-	printf "¿are you sure? [y/N]: "
-	read -r ans
-  [ "$ans" = "y" ] && yes 0 | trash-empty
-  clear
+    clear; tput cup $(($(tput lines)/3)); tput bold
+    set -f
+    printf "%s\n\t" "$fx"
+    printf "Empty ALL trash? (y/N): "
+    read ans
+    [ "$ans" = "y" ] && echo 0 | trash-empty >/dev/null && lf -remote "send $id echo 'Trash emptied'"
 }}
 
-cmd fzf_search ${{
-    res="$( \
-        GREP_PREFIX="grep --color=always --line-number -r "
-        FZF_DEFAULT_COMMAND="$GREP_PREFIX ''" \
-            fzf --bind "change:reload:$GREP_PREFIX {q} || true" \
-            --ansi --layout=reverse --header 'Search in files' \
-            | cut -d':' -f1
-    )"
-    [ ! -z "$res" ] && lf -remote "send $id select \"$res\""
+# File operations
+cmd chmod ${{
+  clear; tput cup $(($(tput lines)/3)); tput bold
+  set -f
+  printf "%s\n\t" "$fx"
+  printf "Mode Bits: "
+  read ans
+
+  for file in "$fx"
+  do
+    [ -n "$ans" ] && chmod $ans $file && lf -remote "send $id reload"
+  done
 }}
+
+# Navigation utilities
+cmd follow-link %{{
+  lf -remote "send $id select \"$(readlink -- "$f" | sed 's/\\/\\\\/g;s/"/\\"/g')\""
+}}
+
+cmd goto-file &{{
+    if [ -n "$(find -mindepth 1 -maxdepth 1 -type d -print -quit)" ]; then
+        lf -remote "send $id :set dironly; bottom; set nodironly; down"
+    else
+        lf -remote "send $id top"
+    fi
+}}
+
+# Selection helpers
+cmd select-type &{{
+    set -f
+    [ "$#" -eq 0 ] && exit
+    files="$(
+        find "$PWD" -mindepth 1 -maxdepth 1 -type "$1" $([ "$lf_hidden" = false ] && printf '%s\n' -not -name '.*') -print0 |
+        sed -z 's/\\/\\\\/g;s/"/\\"/g;s/\n/\\n/g;s/^/"/;s/$/"/' |
+        tr '\0' ' ')"
+
+    lf -remote "send $id :unselect; toggle $files"
+}}
+cmd select-dirs select-type d
+cmd select-files select-type f
+
+# `set preview true` is a hack used to reload the preview
+cmd scroll-preview &{{
+    offset=$((lf_user_preview_offset + $1))
+    [ $offset -lt 1 ] && offset=1
+    lf -remote "send $id :set user_preview_offset $offset; set preview true"
+}}
+cmd on-select set user_preview_offset 1
+
+# Clipboard Operations
+cmd yank-path $printf '%s' "$f" | xclip -i -selection clipboard  # Current file path
+cmd yank-name $basename -- "$f" | xclip -i -selection clipboard  # Current filename only
+# vim: ft=lf
