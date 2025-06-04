@@ -1,32 +1,38 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+set -euo pipefail
 
-cache_dir="${TMPDIR:-/tmp}/zathura"
+CACHE_DIR="${TMPDIR:-/tmp}/zathura"
 
 die() {
-    [ -n "$1" ] && printf '%s\n' "$*" >&2;
+    [ -n "${1:-}" ] && printf '%s\n' "$1" >&2
     exit 1
 }
 
 cleanup() {
-    rm -f -- "$cache_dir"/*
+    rm -f -- "$CACHE_DIR"/*
+}
+trap cleanup EXIT
+
+download_document() {
+    curl -fsSL -o "$CACHE_DIR/$(basename "$1")" "$1" || echo "Error downloading: $1" >&2
 }
 
-get_document() (
-    cd "$cache_dir" && curl -sSLO "$1"
-)
+[ $# -eq 0 ] && die "No arguments given"
 
-### main ###
+[ -d "$CACHE_DIR" ] || mkdir -p -- "$CACHE_DIR" || die "Failed to create cache directory"
 
-[ -z "$1" ] && die "No arguments given"
-trap cleanup EXIT
-[ -d "$cache_dir" ] || mkdir -p -- "$cache_dir" || die
-while [ -n "$1" ]; do
-    case "$1" in
-        *://*.*) get_document "$1" ;;
-        *) echo "Invalid url: $1" >&2 ;;
+for url in "$@"; do
+    case "$url" in
+        *://*.*) download_document "$url" ;;
+        *) echo "Invalid URL: $url" >&2 ;;
     esac
-    shift
 done
 
-[ "$(find "$cache_dir" -type f -print | wc -l)" -ne 0 ] &&
-    zathura "$(find "$cache_dir" -type f)"
+found_file=false
+for file in "$CACHE_DIR"/*; do
+    [ -f "$file" ] || continue
+    zathura "$file" &
+    found_file=true
+done
+
+[ "$found_file" = false ] && echo "No valid documents found." >&2

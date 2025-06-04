@@ -1,0 +1,94 @@
+#!/bin/bash
+
+# --- Configuration ---
+BACKUP_NAME="dotfiles_backup"
+DATE=$(date +"%d-%m-%Y")
+USB_MOUNT_DIR="$(find /media -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)"
+DEST_DIR="$USB_MOUNT_DIR/${BACKUP_NAME}_${DATE}"
+
+# --- Check USB Mount ---
+if [ ! -d "$USB_MOUNT_DIR" ]; then
+    echo "Error: USB not mounted at /media"
+    exit 1
+fi
+
+# --- Create Backup Directory ---
+mkdir -p "$DEST_DIR" || { echo "Failed to create backup directory"; exit 1; }
+
+# --- Backup Sources ---
+declare -a CONFIG_PATHS
+CONFIG_PATHS=(
+    # User configs
+    "$HOME/.config/"{GIMP,abook,acpi,aria2,btop,calcurse,calibre,dconf,dunst,fontconfig,git,go,gtk-{2.0,3.0},htop,ibus,imapnotify,irssi,java,latexmk,lf,libfm,libreoffice,lynx,maven,mbsync,mpd,msmtp,mutt,nano,ncmpcpp,newsboat,npm,nsxiv,nvim,parallel,paru,picom,pinentry,pipewire,profanity,psd,pulse,python,shell,tmux,translate-shell,transmission-daemon,wal,wget,yay,yt-dlp,ytfzf,zathura,zsh,x11}
+
+    "$HOME/.local/share/"{gnupg,larbs,password-store,applications}
+    "$HOME/.zshenv" "$HOME/.urlview" "$HOME/.ssh"
+)
+
+declare -a SYSTEM_PATHS
+SYSTEM_PATHS=(
+    "/etc/environment"
+    "/etc/elogind/"
+    "/etc/X11/"
+    "/etc/vconsole.conf"
+    "/etc/stubby/"
+    "/etc/sudoers.d/"
+    "/etc/sudoers"
+    "/etc/pacman.conf"
+    "/etc/pacman.d/hooks"
+    "/etc/doas.conf"
+    "/etc/NetworkManager/conf.d"
+    "/etc/sysctl.d/"
+    "/etc/tlp.d/"
+    "/etc/makepkg.conf"
+    "/etc/proxychains.conf"
+    "/etc/default/earlyoom"
+    "/etc/default/grub"
+    "/etc/intel-undervolt.conf"
+    "/usr/share/X11"
+)
+
+# --- Backup Functions ---
+backup_item() {
+    local src=$1
+    local dest_dir=$2
+    local use_sudo=${3:-false}
+
+    if [ ! -e "$src" ]; then
+        echo "[SKIPPED] $src (not found)"
+        return 1
+    fi
+
+    local base_name=$(basename "$src")
+    local backup_name="${base_name}-${DATE}"
+
+    echo "[BACKUP] $src → $backup_name"
+    if $use_sudo; then
+        sudo cp -r "$src" "$dest_dir/$backup_name" || { echo "[ERROR] Failed to copy $src (sudo required?)"; return 1; }
+    else
+        cp -r "$src" "$dest_dir/$backup_name" || { echo "[ERROR] Failed to copy $src"; return 1; }
+    fi
+    return 0
+}
+
+# --- Main Backup Process ---
+echo "=== Starting Backup $(date) ==="
+echo "Source: $HOME and system files"
+echo "Destination: $DEST_DIR"
+
+# Backup user files
+for path in "${CONFIG_PATHS[@]}"; do
+    eval "for expanded_path in $path; do backup_item \"\$expanded_path\" \"$DEST_DIR\"; done"
+done
+
+# Backup system files (with sudo)
+for path in "${SYSTEM_PATHS[@]}"; do
+    backup_item "$path" "$DEST_DIR" true
+done
+
+# --- Summary ---
+echo -e "\n=== Backup Complete ==="
+echo "Backup location: $DEST_DIR"
+echo "Total size: $(du -sh "$DEST_DIR" | cut -f1)"
+echo -e "\nContents:"
+tree -L 2 "$DEST_DIR" 2>/dev/null || find "$DEST_DIR" -maxdepth 2 -printf '%P\n'

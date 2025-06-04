@@ -1,0 +1,21 @@
+#!/bin/bash
+
+word=${1:-$(xclip -o -selection primary 2>/dev/null || wl-paste 2>/dev/null)}
+
+# Check for empty word or special characters
+[[ -z "$word" || "$word" =~ [\/] ]] && notify-send -h string:bgcolor:#bf616a -t 3000 "Invalid input." && exit 0
+
+if query=$(curl -s --connect-timeout 5 --max-time 10 "https://rae-api.com/api/words/$word"); then
+
+# Check for invalid word response
+[[ "$query" == *"NOT_FOUND"* ]] && notify-send -h string:bgcolor:#bf616a -t 3000 "Invalid word." && exit 0
+
+# Show only first 3 definitions
+def=$(echo "$query" | jq -r '.data.meanings[0].senses[:3] | .[] | "\(.meaning_number). \(.category) \(.description)"')
+
+# Requires a notification daemon to be installed
+notify-send -t 60000 "$word -" "$def"
+else
+  notify-send -h string:bgcolor:#bf616a -t 3000 "Connection error."
+  exit 1
+fi

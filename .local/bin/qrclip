@@ -1,5 +1,5 @@
-#!/bin/sh
-temp=$(mktemp -p "$XDG_RUNTIME_DIR" --suffix=.png)
-trap 'rm -f $temp' HUP INT QUIT TERM PWR EXIT
-qrencode -t PNG -s 8 -o "$temp" "$(xclip -o)"
-nsxiv "$temp"
+#!/bin/bash
+word=${*:-$(xclip -o -selection primary 2>/dev/null || wl-paste 2>/dev/null)}
+temp=$(mktemp -p "${XDG_RUNTIME_DIR:-/tmp}" qr-XXXXXX.png) || exit 1
+trap 'rm -f "$temp"' EXIT
+qrencode -t PNG -s 8 -o "$temp" -- "$word" && nsxiv "$temp"

@@ -1,41 +1,41 @@
 #!/bin/sh
 
-# Show wifi 📶 and percent strength or 📡 if none.
-# Show 🌐 if connected to ethernet or ❎ if none.
-# Show 🔒 if a vpn connection is active
+# Show wifi status with Nerd Fonts icons and percentage or disconnected icon
+# Show ethernet connection status with Nerd Fonts icons
+# Show lock icon if VPN is active
 
 case $BLOCK_BUTTON in
 1)
   "$TERMINAL" -e nmtui
   pkill -RTMIN+4 dwmblocks
   ;;
-3) notify-send "🌐 Internet module" "\- Click to connect
-❌: wifi disabled
-📡: no wifi connection
-📶: wifi connection with quality
-❎: no ethernet
-🌐: ethernet working
-🔒: vpn is active
+3) notify-send "🌐 Internet Module" "\- Click to connect
+: wifi disabled
+: no wifi connection
+: wifi connection with quality
+: ethernet disconnected
+: ethernet connected
+: VPN active
 " ;;
 6) setsid -f "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
-# Wifi
-if [ "$(cat /sys/class/net/w*/operstate 2>/dev/null)" = 'up' ]; then
-  wifiicon="$(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "% " }' /proc/net/wireless)"
-elif [ "$(cat /sys/class/net/w*/operstate 2>/dev/null)" = 'up' ]; then
-  wifiicon="$(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "% " }' /proc/net/wireless)"
-elif [ "$(cat /sys/class/net/w*/operstate 2>/dev/null)" = 'down' ]; then
-  [ "$(cat /sys/class/net/w*/flags 2>/dev/null)" = '0x1003' ] && wifiicon="📡 " || wifiicon="❌ "
+# Wifi status check
+if cat /sys/class/net/w*/operstate 2>/dev/null | grep -q 'up'; then
+  wifiicon="$(awk '/^\s*w/ { print " ", int($3 * 100 / 70) "% " }' /proc/net/wireless)"
+elif cat /sys/class/net/w*/operstate 2>/dev/null | grep -q 'down'; then
+  if cat /sys/class/net/w*/flags 2>/dev/null | grep -q '0x1003'; then
+    wifiicon=" " || wifiicon=" "
+  fi
 fi
 
-# Ethernet
-[ "$(cat /sys/class/net/e*/operstate 2>/dev/null)" = 'up' ] && ethericon="🌐" || ethericon="❎"
+# Wifi
 
-# TUN
-[ -n "$(cat /sys/class/net/tun*/operstate 2>/dev/null)" ] && tunicon=" 🔒"
+# Ethernet status check
+[ "$(cat /sys/class/net/e*/operstate 2>/dev/null)" = 'up' ] && ethericon="" || ethericon=" "
 
-# Wireguard
-[ "$(cat /sys/class/net/n*/operstate 2>/dev/null)" = 'unknown' ] && tunicon=" 🔒"
+# VPN status check (TUN/Wireguard)
+[ -n "$(cat /sys/class/net/tun*/operstate 2>/dev/null)" ] && tunicon=" "
+[ -n "$(cat /sys/class/net/*wg*/operstate 2>/dev/null)" ] && tunicon=" "
 
 printf "%s%s%s\n" "$wifiicon" "$ethericon" "$tunicon"

@@ -1,9 +1,18 @@
-#!/bin/sh 
-file=$1
-[ -z "$file" ] && exit 1
-[ ! -f "$file" ] && exit 1
-link=$(curl -s -F "file=@$file" -Fexpires=72 https://0x0.st)
-echo "$link" | xclip -sel clip
-# Print link in terminal
-echo "Link: $link"
+#!/bin/sh
 
+# Verify input file exists
+[ -z "$1" ] && {
+  echo "Error: No file specified" >&2
+  exit 1
+}
+[ ! -f "$1" ] && {
+  echo "Error: File '$1' not found" >&2
+  exit 1
+}
+
+# Upload with 72-hour expiry
+link=$(curl -s -F "file=@$1" -F "expires=72" https://0x0.st)
+
+# Output results
+echo "$link" | xclip -sel clip
+echo "Link: $link"

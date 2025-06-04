@@ -1,12 +1,38 @@
 #!/bin/sh
 
-file=$1
-[ -z "$file" ] && exit 1 
-[ ! -f "$file" ] && exit 1
-dir=$(uuidgen | cut -d '-' -f 1)
-mkdir "/tmp/$dir"
-zip -r --encrypt "$dir.zip" "/tmp/$dir"
-link=$(curl -s -F "file=@$file" -Fexpires=24 https://0x0.st)
-echo "$link" | xclip -sel clip
-echo "Link: $link"
+# Simple secure file upload script
+# Usage: ./supfile <file-to-upload>
 
+# Check if file was provided and exists
+if [ -z "$1" ] || [ ! -f "$1" ]; then
+    echo "Error: Please provide a valid file" >&2
+    echo "Usage: $0 <file>" >&2
+    exit 1
+fi
+
+# Generate a random password for the zip
+password=$(openssl rand -hex 12)
+# Create a secure temp zip name
+zipfile="/tmp/$(date +%s)_secure.zip"
+
+# Create encrypted zip (quiet mode)
+echo "Creating encrypted archive..."
+zip -q -P "$password" "$zipfile" "$1" || {
+    echo "Error creating zip file" >&2
+    exit 1
+}
+
+# Upload to 0x0.st (24h expiry)
+echo "Uploading file..."
+link=$(curl -s -F "file=@$zipfile" -F "expires=72" https://0x0.st)
+
+# Clean up temp file
+rm -f "$zipfile"
+
+# Show results
+echo "$link" | xclip -sel clip
+echo "UPLOAD COMPLETE"
+echo "File:    $(basename "$1")"
+echo "Password: $password"
+echo "Link:     $link"
+echo "Expires:  24 hours"

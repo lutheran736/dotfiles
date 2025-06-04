@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Get the word from the clipboard or the first argument
+word=${1:-$(xclip -o -selection primary 2>/dev/null || wl-paste 2>/dev/null)}
+
+# Set default parameters
+from_lang=${2:-en}
+to_lang=${3:-es}
+
+# Check if the word is empty or a URL
+if [[ -z "$word" || "$word" =~ ^https?:// ]]; then
+  translation=$(trans "$from_lang:$to_lang" "$word")
+  notify-send -t 60000 "open $translation"
+  exit 0
+fi
+
+# Check if the word contains special characters
+if [[ "$word" =~ [\/] ]]; then
+  notify-send -h string:bgcolor:#bf616a -t 3000 "Invalid input."
+  exit 0
+fi
+
+# Try to get the translation
+if translation=$(trans -b -p "$from_lang:$to_lang" "$word" 2>/dev/null); then
+  notify-send -t 60000 "$word -" "$translation"
+  # espeak -ves-419+f3 -s 160 -p 60 "$translation"
+else
+  notify-send -h string:bgcolor:#bf616a -t 3000 "Connection error."
+fi

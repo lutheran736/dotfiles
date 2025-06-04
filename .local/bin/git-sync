@@ -1,0 +1,10 @@
+#!/bin/sh
+(
+  cd "$HOME/docs/personal" || exit 0
+  [ -d .git ] || exit 0
+
+  git add .
+  git diff-index --quiet --cached HEAD || git commit -m "Notes - $(date)"
+  git remote show origin >/dev/null 2>&1 && { git pull --quiet && git push --quiet; }
+) &
+notify-send "Synchronizing notes"

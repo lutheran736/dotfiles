@@ -1,0 +1,8 @@
+#!/bin/sh
+
+case "$1" in
+  start)  pgrep -x cupsd >/dev/null || { echo "▶ Starting CUPS"; sudo -A cupsd -f & } ;;
+  stop)   pgrep -x cupsd >/dev/null && { echo "■ Stopping  CUPS"; sudo -A pkill -x cupsd; } ;;
+  status) pgrep -x cupsd >/dev/null && echo "CUPS: ▲ Running (PID $(pgrep cupsd))" || echo "CUPS: ▼ Stopped" ;;
+  *)      echo "Usage: cupsctl [start|stop|status]" ;;
+esac

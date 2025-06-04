@@ -1,0 +1,17 @@
+#!/bin/sh
+
+cd "$HOME/.local/share/password-store/" || exit 1
+
+if [ "$1" = 'otp' ]; then
+  type="otp"
+else
+  type="password"
+fi
+
+selection="$(find -L . -name '*.gpg' | sed -e 's/.\///' -e 's/.gpg//' | fzf --layout=reverse)"
+
+if [ ${type} = "totp" ]; then
+  pass otp "${selection}"
+else
+  pass "${selection}"
+fi

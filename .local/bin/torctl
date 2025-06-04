@@ -1,0 +1,8 @@
+#!/bin/sh
+
+case $1 in
+  start)  pgrep -x tor >/dev/null || { echo "▶ Starting Tor"; sudo -A tor --quiet --runasdaemon 0 2>&1 & } ;;
+  stop)   pgrep -x tor >/dev/null && { echo "■ Stopping Tor"; sudo -A pkill -x tor; } ;;
+  status) pgrep -x tor >/dev/null && echo "Tor: ▲ Running (PID $(pgrep tor))" || echo "Tor: ▼ Stopped" ;;
+  *)      echo "Usage: torctl [start|stop|status]" ;;
+esac

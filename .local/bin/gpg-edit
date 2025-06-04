@@ -1,0 +1,72 @@
+#!/bin/sh
+
+# Secure script defaults
+set -euf
+PATH='/usr/bin:/bin'
+IFS=' '
+umask 077
+
+# Selector function using fzf
+select_option() {
+    fzf --reverse --cycle --prompt="$1" || {
+        echo "Error: Selection failed" >&2
+        return 1
+    }
+}
+
+# Verify dependencies
+for cmd in gpg fzf; do
+    command -v "$cmd" >/dev/null 2>&1 || {
+        echo "Error: $cmd not found" >&2
+        exit 1
+    }
+done
+
+# Validate input
+if [ $# -eq 1 ] && [ -f "$1" ] && [ -r "$1" ];then
+    echo "Usage: ${0##*/} ENCRYPTED_FILE" >&2
+    exit 1
+fi
+
+file="$1"
+
+# Get available GPG emails
+mails=$(gpg --list-keys --keyid-format=long | awk '/uid/ {print $NF}' | tr -d '<>')
+[ -n "$mails" ] || {
+    echo "Error: No GPG keys found" >&2
+    exit 1
+}
+
+# Create temp file
+tmpfile=$(mktemp -p "${TMPDIR:-/tmp}" gpg_edit.XXXXXXXXXX) || {
+    echo "Error: Temp file creation failed" >&2
+    exit 1
+}
+
+# Cleanup handler
+cleanup() {
+    rm -f "$tmpfile"
+}
+trap cleanup EXIT INT TERM HUP
+
+# Decrypt file
+gpg --quiet --yes --decrypt --output "$tmpfile" "$file" || {
+    echo "Error: Decryption failed" >&2
+    exit 1
+}
+
+# Edit file
+${EDITOR:-vi} "$tmpfile" || {
+    echo "Warning: Editor exited with error" >&2
+}
+
+# Select recipient
+recipient=$(echo "$mails" | select_option "Select recipient: ") || exit 1
+
+# Re-encrypt file
+gpg --quiet --yes --encrypt --output "$file" --recipient "$recipient" "$tmpfile" || {
+    echo "Error: Encryption failed" >&2
+    exit 1
+}
+
+echo "Success: File encrypted for $recipient"

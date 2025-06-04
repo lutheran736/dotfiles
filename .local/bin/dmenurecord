@@ -1,194 +1,203 @@
-#!/bin/sh
+#!/bin/bash
 
-# Usage:
-# `$0`: Ask for recording type via dmenu
-# `$0 screencast`: Record both audio and screen
-# `$0 video`: Record only screen
-# `$0 audio`: Record only audio
-# `$0 kill`: Kill existing recording
+# Nerd Fonts icons
+ICON_RECORD="" # Video recording icon
+ICON_MIC=""    # Microphone icon
+ICON_CAM=""    # Webcam icon
+ICON_SCREEN="" # Screen icon
+
+# Configuration
+REC_DIR="${HOME}/Videos/Recordings" # Central recordings directory
+PID_FILE="/tmp/recordingpid"        # PID storage file
+ICON_FILE="/tmp/recordingicon"      # Status icon file
+LOG_FILE="/tmp/recording.log"       # FFmpeg log file
+STATUSBAR="${STATUSBAR:-dwmblocks}" # Status bar controller
+DATE_CMD="date +%Y%m%d-%H%M-%S"     # Date format variable
+CMD="ffmpeg -y -hide_banner -loglevel info"
+
+# Create recordings directory if missing
+mkdir -p "$REC_DIR"
+
+# Utility function to get screen dimensions
+get_dimensions() {
+  xrandr | grep -oP '(?<=current ).*(?=,)' | tr -d ' '
+}
+
+# Update status bar icon
+update_status() {
+  echo "$1" >"$ICON_FILE"
+  pkill -RTMIN+9 "$STATUSBAR" # Refresh status bar
+}
+
+# Stop active recording
+stop_recording() {
+  [ ! -f "$PID_FILE" ] && return # Exit if no recording
+
+  rec_pid=$(cat "$PID_FILE")
+  kill -15 "$rec_pid" 2>/dev/null
+  rm -f "$PID_FILE"
+  update_status ""
+  # notify-send "Recording Stopped" "Your recording has been saved to $REC_DIR"
+}
+
+# Generate timestamp filename
+get_filename() {
+  prefix="$1"
+  echo "${REC_DIR}/${prefix}-$($DATE_CMD).${2:-mkv}"
+}
+
+# Record selected area with audio
+# record_area_with_audio() {
+#   geometry=$(slop -f "%x %y %w %h" 2>/dev/null)
+#   output=$(get_filename "area" "mp4")
+#   read -r X Y W H <<<"$geometry"
 #
-# If there is already a running instance, user will be prompted to end it.
+#   ${CMD} -y -vaapi_device /dev/dri/renderD128 \
+#     -f pulse -thread_queue_size 1024 \
+#     -i alsa_output.pci-0000_00_1b.0.analog-stereo.monitor \
+#     -f x11grab -thread_queue_size 2048 -s "${W}x${H}" \
+#     -i ":0.0+${X},${Y}" \
+#     -vf "format=nv12,hwupload" \
+#     -c:v h264_vaapi -qp 17 -r 30 \
+#     -map 0:a -map 1:v \
+#     -movflags +faststart \
+#     "$output" &>"$LOG_FILE" &
+#
+#   echo $! >"$PID_FILE"
+#
+#   update_status "$ICON_RECORD$ICON_MIC"
+# }
 
-getdim() { xrandr | grep -oP '(?<=current ).*(?=,)' | tr -d ' '; }
+record_area_with_audio() {
+  geometry=$(slop -f "%x %y %w %h" 2>/dev/null)
+  output=$(get_filename "area" "mp4")
+  read -r X Y W H <<<"$geometry"
 
-updateicon() {
-  echo "$1" >/tmp/recordingicon
-  pkill -RTMIN+9 "${STATUSBAR:-dwmblocks}"
+  ${CMD} -f pulse -i alsa_output.pci-0000_00_1b.0.analog-stereo.monitor \
+    -f x11grab -s "${W}x${H}" \
+    -i ":0.0+${X},${Y}" \
+    -c:v libx264 \
+    -crf 30 -r 22 -c:a libopus -movflags +faststart \
+    "$output" &>"$LOG_FILE" &
+
+  echo $! >"$PID_FILE"
+
+  update_status "$ICON_RECORD$ICON_MIC"
 }
 
-killrecording() {
-  recpid="$(cat /tmp/recordingpid)"
-  kill -15 "$recpid"
-  rm -f /tmp/recordingpid
-  updateicon ""
-  pkill -RTMIN+9 "${STATUSBAR:-dwmblocks}"
-}
+# Record screen with audio
+record_screen_with_audio() {
+  output=$(get_filename "screencast" "mp4")
 
-screencast() {
-  ffmpeg -y \
-    -f x11grab \
-    -framerate 30 \
-    -s "$(getdim)" \
-    -i "$DISPLAY" \
-    -r 24 \
-    -use_wallclock_as_timestamps 1 \
-    -f alsa -thread_queue_size 1024 -i default \
-    -c:v h264 \
-    -crf 0 -preset ultrafast -c:a aac \
-    "$HOME/screencast-$(date '+%y%m%d-%H%M-%S').mp4" &
-  echo $! >/tmp/recordingpid
-  updateicon "⏺️🎙️"
-}
-
-video_monitor() {
-  ffmpeg -vaapi_device /dev/dri/renderD128 \
-    -f pulse \
-    -thread_queue_size 1024 -i default \
-    -f pulse \
-    -thread_queue_size 1024 \
-    -i alsa_output.pci-0000_00_1b.0.analog-stereo.monitor \
-    -f x11grab \
-    -thread_queue_size 2048 \
-    -s "$(getdim)" \
-    -i "$DISPLAY" \
-    -vf "format=nv12,hwupload" \
-    -c:v h264_vaapi -qp 24 \
-    -map 1:a -map 2:v \
-    "$HOME/Videos/video-$(date '+%y%m%d-%H%M-%S').mp4" &
-  echo $! >/tmp/recordingpid
-  updateicon "⏺️"
-}
-
-video_microfono_monitor() {
-  ffmpeg \
-    -vaapi_device /dev/dri/renderD128 \
-    -f pulse \
-    -thread_queue_size 1024 \
-    -i default \
+  ${CMD} -vaapi_device /dev/dri/renderD128 \
     -f pulse -thread_queue_size 1024 \
     -i alsa_output.pci-0000_00_1b.0.analog-stereo.monitor \
-    -f x11grab \
-    -thread_queue_size 2048 \
-    -video_size 1366x768 \
-    -i :0 \
+    -f x11grab -thread_queue_size 2048 \
+    -s "$(get_dimensions)" -i :0 -vf 'format=nv12,hwupload' \
+    -c:v h264_vaapi -qp 17 -r 27 -map 0:a -map 1:v \
+    -c:a aac -b:a 128k \
+    -movflags +faststart \
+    "$output" &>"$LOG_FILE" &
+
+  echo $! >"$PID_FILE"
+  update_status "$ICON_RECORD$ICON_MIC"
+}
+
+# Record screen only
+record_screen() {
+  output=$(get_filename "screen")
+
+  ${CMD} -vaapi_device /dev/dri/renderD128 \
+    -f x11grab -thread_queue_size 2048 \
+    -s "$(get_dimensions)" -i :0 \
+    -vf 'format=nv12,hwupload' -c:v h264_vaapi -qp 17 -r 30 \
+    "$output" &>"$LOG_FILE" &
+
+  echo $! >"$PID_FILE"
+  update_status "$ICON_SCREEN"
+}
+
+# Record audio only
+record_audio() {
+  output=$(get_filename "audio" "flac")
+
+  ${CMD} -f alsa -i default -c:a flac \
+    "$output" &>"$LOG_FILE" &
+
+  echo $! >"$PID_FILE"
+  update_status "$ICON_MIC"
+}
+
+# Record selected screen area
+record_selected_area() {
+  geometry=$(slop -f "%x %y %w %h" 2>/dev/null)
+  output=$(get_filename "area")
+  read -r X Y W H <<<"$geometry"
+
+  ${CMD} -y -vaapi_device /dev/dri/renderD128 \
+    -f x11grab -thread_queue_size 2048 -video_size "${W}x${H}" \
+    -i ":0.0+${X},${Y}" \
     -vf "format=nv12,hwupload" \
-    -c:v h264_vaapi \
-    -qp 17 -map 2:v \
-    "$HOME/Videos/video-$(date '+%y%m%d-%H%M-%S').mp4" &
-  echo $! >/tmp/recordingpid
-  updateicon "⏺️"
+    -c:v h264_vaapi -qp 0 -r 30 "$output" &>"$LOG_FILE" &
+
+  echo $! >"$PID_FILE"
+
+  update_status "$ICON_RECORD$ICON_MIC"
+
 }
 
-video() {
-  ffmpeg \
-    -f x11grab \
-    -framerate 30 \
-    -s "$(getdim)" \
-    -i "$DISPLAY" \
-    -c:v libx264 -qp 0 -r 30 \
-    "$HOME/video-$(date '+%y%m%d-%H%M-%S').mkv" &
-  echo $! >/tmp/recordingpid
-  updateicon "⏺️"
+# Record webcam (HD if available)
+record_webcam() {
+  resolution="640x480"
+  suffix=""
+
+  # Check for HD webcam support
+  if v4l2-ctl --list-formats | grep -q '1920x1080'; then
+    resolution="1920x1080"
+    suffix="-hd"
+  fi
+
+  output=$(get_filename "webcam${suffix}")
+
+  ${CMD} -f v4l2 -i /dev/video0 -video_size "$resolution" \
+    "$output" &>"$LOG_FILE" &
+
+  echo $! >"$PID_FILE"
+  update_status "$ICON_CAM"
 }
 
-webcamhidef() {
-  ffmpeg \
-    -f v4l2 \
-    -i /dev/video0 \
-    -video_size 1920x1080 \
-    "$HOME/webcam-$(date '+%y%m%d-%H%M-%S').mkv" &
-  echo $! >/tmp/recordingpid
-  updateicon "🎥"
-}
+# Display interactive menu
+show_menu() {
+  options="Screen with Audio\nScreen Only\nSelect Area\nSelect Area+Audio\nAudio Only\nWebcam\nStop Recording"
+  choice=$(echo -e "$options" | dmenu -i -p " Select recording type:")
 
-webcam() {
-  ffmpeg \
-    -f v4l2 \
-    -i /dev/video0 \
-    -video_size 640x480 \
-    "$HOME/webcam-$(date '+%y%m%d-%H%M-%S').mkv" &
-  echo $! >/tmp/recordingpid
-  updateicon "🎥"
-}
-
-audio() {
-  ffmpeg \
-    -f alsa -i default \
-    -c:a flac \
-    "$HOME/audio-$(date '+%y%m%d-%H%M-%S').flac" &
-  echo $! >/tmp/recordingpid
-  updateicon "🎙️"
-}
-
-askrecording() {
-  choice=$(printf "screencast\\nvideo\\nvideo_monitor\\nvideo_microfono_monitor\\nvideo selected\\nvideoselectedM\\naudio\\nwebcam\\nwebcam (hi-def)" | dmenu -i -p "Select recording style:")
   case "$choice" in
-  screencast) screencast ;;
-  audio) audio ;;
-  video) video ;;
-  video_monitor) video_monitor ;;
-  video_microfono_monitor) video_microfono_monitor ;;
-  videoselectedM) videoselectedM ;;
-  *selected) videoselected ;;
-  webcam) webcam ;;
-  "webcam (hi-def)") webcamhidef ;;
+  "Screen with Audio") record_screen_with_audio ;;
+  "Screen Only") record_screen ;;
+  "Select Area") record_selected_area ;;
+  "Select Area+Audio") record_area_with_audio ;;
+  "Audio Only") record_audio ;;
+  "Webcam") record_webcam ;;
+  "Stop Recording") stop_recording ;;
   esac
 }
 
-asktoend() {
-  response=$(printf "No\\nYes" | dmenu -i -p "Recording still active. End recording?") &&
-    [ "$response" = "Yes" ] && killrecording
+# Check for existing recording
+check_existing_recording() {
+  if [ -f "$PID_FILE" ] && kill -0 "$(cat $PID_FILE)" 2>/dev/null; then
+    response=$(printf "No\nYes" | dmenu -i -p "Recording active. Stop it?")
+    [ "$response" = "Yes" ] && stop_recording
+    exit
+  fi
 }
 
-videoselected() {
-  slop -f "%x %y %w %h" >/tmp/slop
-  read -r X Y W H </tmp/slop
-  rm /tmp/slop
-
-  ffmpeg \
-    -f x11grab \
-    -framerate 30 \
-    -video_size "$W"x"$H" \
-    -i :0.0+"$X,$Y" \
-    -c:v libx264 -qp 0 -r 30 \
-    "$HOME/box-$(date '+%y%m%d-%H%M-%S').mkv" &
-  echo $! >/tmp/recordingpid
-  updateicon "⏺️"
-}
-
-videoselectedM() {
-  slop -f "%x %y %w %h" >/tmp/slop
-  read -r X Y W H </tmp/slop
-  rm /tmp/slop
-
-  ffmpeg \
-    -vaapi_device /dev/dri/renderD128 \
-    -f pulse \
-    -thread_queue_size 1024 \
-    -i default \
-    -f pulse \
-    -thread_queue_size 1024 \
-    -i alsa_output.pci-0000_00_1b.0.analog-stereo.monitor \
-    -f x11grab \
-    -thread_queue_size 2048 \
-    -s "${W}x${H}" \
-    -i ":0.0+${X},${Y}" \
-    -vf "format=nv12,hwupload" \
-    -c:v h264_vaapi -qp 0 -r 30 \
-    -map 1:a -map 2:v \
-    "${HOME}/Videos/box-$(date +%y%m%d-%H%M-%S).mp4" &
-  echo $! >/tmp/recordingpid
-  updateicon "⏺️"
-}
-
+# Main execution
 case "$1" in
-screencast) screencast ;;
-audio) audio ;;
-video) video ;;
-video_monitor) video_monitor ;;
-video_microfono_monitor) video_microfono_monitor ;;
-videoselectedM) videoselectedM ;;
-*selected) videoselected ;;
-kill) killrecording ;;
-*) ([ -f /tmp/recordingpid ] && asktoend && exit) || askrecording ;;
+screen) record_screen_with_audio ;;
+audio) record_audio ;;
+area) record_selected_area ;;
+area-audio) record_area_with_audio ;;
+webcam) record_webcam ;;
+stop) stop_recording ;;
+*) check_existing_recording && show_menu ;;
 esac

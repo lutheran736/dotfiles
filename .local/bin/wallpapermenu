@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+# slightly scuffed wallpaper picker menu for use with pywal - uses nsxiv if installed, otherwise uses dmenu
+
+FOLDER=~/Pictures/wallpapers # wallpaper folder
+
+
+menu () {
+		if command -v nsxiv >/dev/null; then 
+				CHOICE=$(nsxiv -otb $FOLDER/*)
+		else 
+				CHOICE=$(echo -e "Random\n$(command ls -v $FOLDER)" | dmenu -c -l 15 -i -p "Wallpaper: ")
+		fi
+
+case $CHOICE in
+		Random) setbg "$FOLDER";; # dmenu random option
+		*.*) setbg "$CHOICE";;
+		*) exit 0 ;;
+esac
+}
+
+# If given arguments:
+# First argument will be used by pywal as wallpaper/dir path
+# Second will be used as theme (use wal --theme to view built-in themes)
+
+case "$#" in
+		0) menu ;;
+		1) setbg "$1";;
+		2) setbg -i "$1";;
+		*) exit 0 ;;
+esac

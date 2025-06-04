@@ -1,38 +1,37 @@
 #!/bin/sh
 
+# Initial battery state
 old_state=$(cat /sys/class/power_supply/BAT?*/status)
 notification_sent=false
 
 while true; do
-
+  # Read battery state and percentage
   state=$(cat /sys/class/power_supply/BAT?*/status)
   percent=$(cat /sys/class/power_supply/BAT?*/capacity)
 
-  # Check if battery state has changed
+  # Check if the battery state has changed
   if [ "$state" != "$old_state" ]; then
     notification_sent=false
     old_state=$state
   fi
 
-  # Check if battery is fully charged
+  # Determine message based on battery state
   if [ "$state" = "Charging" ] && [ "$percent" -ge 100 ] && [ "$notification_sent" = false ]; then
-    notify-send -u low "$percent! Battery fully charged" "Disconnect your charger from the power!"
+    msg="Battery fully charged. Disconnect your charger."
     notification_sent=true
+  elif [ "$state" = "Discharging" ]; then
+    if [ "$percent" -le 25 ] && [ "$notification_sent" = false ]; then
+      msg="Critical battery level. Please charge your battery immediately."
+      notification_sent=true
+    elif [ "$percent" -le 20 ]; then
+      pauseallmpv
+      mpc pause
+      sleep 30s && loginctl suspend
+    fi
   fi
 
-  # Check if battery is too low
-  if [ "$state" = "Discharging" ] && [ "$percent" -le 25 ] && [ "$notification_sent" = false ]; then
-    notify-send -u critical "$percent% Critical battery level" "Charge your battery immediately!"
-    notification_sent=true
-  fi
-
-  # suspend if battery is to low
-  if [ "$state" = "Discharging" ] && [ "$percent" -le 20 ]; then
-    notify-send -u critical "$percent% Critical battery level" "The PC will be suspended!"
-    pauseallmpv
-    mpc pause
-    sleep 30s && slock loginctl suspend -i
-  fi
+  # Speak the message if set
+  [ -n "$msg" ] && notify-send "$percent% - $msg" && espeak-ng -ven-us+f3 -s 160 -p 60 -a 50 "$msg" && msg=''
 
   # Wait 1 minute before checking again
   sleep 60
