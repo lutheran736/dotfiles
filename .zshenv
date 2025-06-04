@@ -1,75 +1,79 @@
-#!/bin/zsh
+#!/usr/bin/env zsh
 
-# Profile file, runs on login. Environmental variables are set here.
-# Add all directories in `~/.local/bin` to $PATH
-export PATH="$PATH:$(find ~/.local/bin -type d | paste -sd ':' -)"
+# PATH configuration
+export PATH="$PATH:$(find ~/.local/bin -type d | paste -sd ':')"
 
-unsetopt PROMPT_SP 2>/dev/null
-
-# Default programs:
+# Default applications
 export EDITOR="nvim"
 export TERMINAL="st"
-export TERMINAL_PROG="st"
 export BROWSER="librewolf"
+export OPENER="xdg-open"
+export PAGER='less'
 
-# Change the default crypto/weather monitor sites.
-# export CRYPTOURL="rate.sx"
-# export WTTRURL="wttr.in"
-
-# ~/ Clean-up:
+# XDG Base Directory Specification
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_STATE_HOME="$HOME/.local/state"
+
+# X11 configuration files
 export XINITRC="$XDG_CONFIG_HOME/x11/xinitrc"
-#export XAUTHORITY="$XDG_RUNTIME_DIR/Xauthority" # This line will break some DMs.
+export XPROFILE="$XDG_CONFIG_HOME/x11/xprofile"
+export XRESOURCES="$XDG_CONFIG_HOME/x11/xresources"
+
+# Application configurations
 export NOTMUCH_CONFIG="$XDG_CONFIG_HOME/notmuch-config"
 export GTK2_RC_FILES="$XDG_CONFIG_HOME/gtk-2.0/gtkrc-2.0"
 export WGETRC="$XDG_CONFIG_HOME/wget/wgetrc"
 export INPUTRC="$XDG_CONFIG_HOME/shell/inputrc"
 export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
-export WINEPREFIX="$XDG_DATA_HOME/wineprefixes/default"
-export KODI_DATA="$XDG_DATA_HOME/kodi"
 export PASSWORD_STORE_DIR="$XDG_DATA_HOME/password-store"
 export GNUPGHOME="$XDG_DATA_HOME/gnupg"
-export TMUX_TMPDIR="$XDG_RUNTIME_DIR"
-export ANDROID_SDK_HOME="$XDG_CONFIG_HOME/android"
-export CARGO_HOME="$XDG_DATA_HOME/cargo"
-export GOPATH="$XDG_DATA_HOME/go"
-export GOMODCACHE="$XDG_CACHE_HOME/go/mod"
-export ANSIBLE_CONFIG="$XDG_CONFIG_HOME/ansible/ansible.cfg"
-export UNISON="$XDG_DATA_HOME/unison"
 export HISTFILE="$XDG_DATA_HOME/history"
-export MBSYNCRC="$XDG_CONFIG_HOME/mbsync/config"
 export ELECTRUMDIR="$XDG_DATA_HOME/electrum"
 export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/pythonrc"
-export SQLITE_HISTORY="$XDG_DATA_HOME/sqlite_history"
-export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/pythonrc"
 export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
-export LYNX_CFG="$XDG_CONFIG_HOME/lynx/lynx.cfg"
-export LYNX_LSS="$XDG_CONFIG_HOME/lynx/lynx.lss"
-export LESSHISTFILE="$XDG_CACHE_HOME/less/history"
-export TEXMFHOME=$XDG_DATA_HOME/texmf
-export TEXMFVAR=$XDG_CACHE_HOME/texlive/texmf-var
-export TEXMFCONFIG=$XDG_CONFIG_HOME/texlive/texmf-config
+export MBSYNCRC="$XDG_CONFIG_HOME/mbsync/config"
+export WINEPREFIX="$XDG_DATA_HOME/wineprefixes/default"
+export INPUTRC="$XDG_CONFIG_HOME/shell/inputrc"
+export ANDROID_SDK_HOME="$XDG_CONFIG_HOME/android"
+export SQLITE_HISTORY="$XDG_DATA_HOME/sqlite_history"
+export GRADLE_USER_HOME="$XDG_DATA_HOME"/gradle
+export NVM_DIR="$XDG_DATA_HOME"/nvm
+export PARALLEL_HOME="$XDG_CONFIG_HOME"/parallel
+export LYNX_CFG="$XDG_CONFIG_HOME"/lynx/lynx.cfg
+export LYNX_LSS="$XDG_CONFIG_HOME"/lynx/lynx.lss
+export LESSHISTFILE="$XDG_CACHE_HOME/less_history"
+export PYTHON_HISTORY="$XDG_DATA_HOME/python/history"
+export GRADLE_USER_HOME="$XDG_DATA_HOME/gradle"
+export FFMPEG_DATADIR="$XDG_CONFIG_HOME/ffmpeg"
+export TEXMFHOME="$XDG_DATA_HOME/texmf"
+export TEXMFVAR="$XDG_CACHE_HOME/texlive/texmf-var"
+export MAVEN_ARGS="--settings $XDG_CONFIG_HOME/maven/settings.xml"
+export MAVEN_OPTS=-Dmaven.repo.local="$XDG_DATA_HOME"/maven/repository
+export CARGO_HOME="$XDG_DATA_HOME/cargo"
+export GOPATH="$XDG_DATA_HOME/go"
+export ANSIBLE_CONFIG="$XDG_CONFIG_HOME/ansible/ansible.cfg"
+export UNISON="$XDG_DATA_HOME/unison"
 
-# Other program settings:
+# Java configuration
+export _JAVA_OPTIONS=-Djava.util.prefs.userRoot="$XDG_CONFIG_HOME/java"
+export AWT_TOOLKIT="MToolkit wmname LG3D"
+export _JAVA_AWT_WM_NONREPARENTING=1
+
+# Less & Man
+export LESS='-i -x4 -M -R -~ --mouse --wheel-lines=4 --intr=q$ -PM ?f%f:[stdin]. ?m(%i/%m) .| %L lines | ?eBot:%Pb\%. | %lt-%lb $'
+export LESS="$LESS -R --use-color -DsG\$ -DdB\$ -DuC\$ -DkG\$ -DEGb\$ -DNK\$ -DPGb\$ -DSyb\$ -DRK\$ -DMg\$ +Gg"
+export LESSOPEN="|/usr/bin/highlight -O ansi %s 2>/dev/null"
+export MANPAGER='less -m'
+export MANLESS='man $MAN_PN | %L lines | ?eBot:%pb\%. | %lt-%lb'
+
+# UI/UX settings
 export SUDO_ASKPASS="$HOME/.local/bin/dmenupass"
-export FZF_DEFAULT_OPTS="--layout=reverse --height 40%"
-export LESS="R"
-export LESS_TERMCAP_mb="$(printf '%b' '[1;31m')"
-export LESS_TERMCAP_md="$(printf '%b' '[1;36m')"
-export LESS_TERMCAP_me="$(printf '%b' '[0m')"
-export LESS_TERMCAP_so="$(printf '%b' '[01;44;33m')"
-export LESS_TERMCAP_se="$(printf '%b' '[0m')"
-export LESS_TERMCAP_us="$(printf '%b' '[1;32m')"
-export LESS_TERMCAP_ue="$(printf '%b' '[0m')"
-export LESSOPEN="| /usr/bin/highlight -O ansi %s 2>/dev/null"
-export QT_QPA_PLATFORMTHEME="gtk2" # Have QT use gtk2 theme.
-#export MOZ_USE_XINPUT2=1                  # Mozilla smooth scrolling/touchpads.
-export AWT_TOOLKIT="MToolkit wmname LG3D" # May have to install wmname
-export _JAVA_AWT_WM_NONREPARENTING=1      # Fix for Java applications in dwm
+export QT_QPA_PLATFORMTHEME="gtk3"
+export GREP_COLORS='mt=38;5;3:mc=48;5;3;38;5;0:fn=38;5;14:ln=38;5;8:bn=38;5;4:se=1;38;5;5'
+[ -f "$XDG_CONFIG_HOME/lscolors" ] && eval "$(dircolors "$XDG_CONFIG_HOME/lscolors")" || eval "$(dircolors)"
 
+# System tweaks
 [ ! -f "$XDG_CONFIG_HOME/shell/shortcutrc" ] && setsid -f shortcuts >/dev/null 2>&1
-
-# Switch escape and caps if tty and no passwd required:
 sudo -n loadkeys "$XDG_DATA_HOME/larbs/ttymaps.kmap" 2>/dev/null
