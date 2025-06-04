@@ -1,6 +1,6 @@
 # Dotfiles
 
-this is my dotfiles
+This is my dotfiles
 
 - Table of Contents
   - [Preview](#Preview)
@@ -18,14 +18,12 @@ this is my dotfiles
 - WM: [dwm](https://github.com/lutheran736/dwm)
 - Font:
   - Monospace: [JetBrainsMono Nerd Font](https://www.nerdfonts.com/font-downloads)
-  - Icon Fonts: [Fontawesome](https://github.com/FortAwesome/Font-Awesome)
 - Colorscheme: Arc-gtk-theme
 - Icons: [Papirus](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme)
 - Terminal: [st](https://github.com/lutheran736/st)
 - Shell: zsh
 - Editor: [Neovim](https://neovim.io/)
-    - Config: [Nvchad](https://nvchad.github.io/)
-- Compositor: xcompmgr
+- Compositor: picom
 - Image Preview: [nsxiv](https://nsxiv.codeberg.page/)
 - Wallpaper Setter: xwallpaper
 - Screenshot: [main](https://github.com/naelstrof/maim)
